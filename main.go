@@ -503,7 +503,7 @@ func main() {
 			c.JSON(201, p)
 		}
 	})
-	r.Static("/", "/root/wireguard-ui/public/dist")
+	r.Static("/public", "/root/wireguard-ui/public/dist")
 	if err := r.Run(":5051"); err != nil {
 		panic(err)
 	}
