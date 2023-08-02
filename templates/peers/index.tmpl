@@ -8,5 +8,10 @@
 		<h1 class="text-3xl font-bold underline">
 			{{ .title }}
 		</h1>
+        <ul>
+            {{range .peers}}
+                    <li>{{.Name}} - {{.PublicKey}}</li>
+            {{end}}
+        </ul>
 	</body>
 </html>
