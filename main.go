@@ -382,6 +382,7 @@ func init() {
 		panic(err)
 	}
 	for _, p := range data {
+		fmt.Println(p)
 		config.Peers[p.PublicKey] = &p
 		config.Peers[p.PublicKey].PreviousTotalRx = p.TotalRx
 		config.Peers[p.PublicKey].PreviousTotalTx = p.TotalTx
