@@ -3,7 +3,7 @@ const button = document.querySelector("button");
 
 button.addEventListener("click", async () => {
   try {
-    const res = await fetch("/api/peers", { method: "POST" });
+    const res = await fetch("/api/peers/" + input.value, { method: "POST" });
     console.log(res.status);
     const data = await res.json();
     console.log(data);
