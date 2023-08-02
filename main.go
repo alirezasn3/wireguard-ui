@@ -524,7 +524,7 @@ func main() {
 			"title": "add peer",
 		})
 	})
-	r.Static("/", "/root/wireguard-ui/public")
+	r.Static("/public", "/root/wireguard-ui/public")
 	if err := r.Run(":5051"); err != nil {
 		panic(err)
 	}
