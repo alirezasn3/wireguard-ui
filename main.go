@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"os/exec"
 	"strconv"
@@ -415,6 +416,7 @@ func main() {
 	gin.SetMode(gin.ReleaseMode)
 	gin.DefaultWriter = io.Discard
 	r := gin.Default()
+	r.LoadHTMLGlob("/etc/wireguard-ui/templates/*")
 	r.Use(func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", "*")
 		c.Next()
@@ -503,7 +505,11 @@ func main() {
 			c.JSON(201, p)
 		}
 	})
-	r.Static("/public", "/root/wireguard-ui/public/build")
+	r.GET("/", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "index.tmpl", gin.H{
+			"title": "Home Page",
+		})
+	})
 	if err := r.Run(":5051"); err != nil {
 		panic(err)
 	}
