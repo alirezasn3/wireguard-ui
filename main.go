@@ -382,7 +382,6 @@ func init() {
 		panic(err)
 	}
 	for _, p := range data {
-		fmt.Println(p)
 		config.Peers[p.PublicKey] = &p
 		config.Peers[p.PublicKey].PreviousTotalRx = p.TotalRx
 		config.Peers[p.PublicKey].PreviousTotalTx = p.TotalTx
@@ -512,13 +511,13 @@ func main() {
 		})
 	})
 	r.GET("/peers", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "peers/index.tmpl", gin.H{
+		c.HTML(http.StatusOK, "peers.tmpl", gin.H{
 			"title": "peers",
 			"peers": config.Peers,
 		})
 	})
 	r.GET("/peers/add", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "peers/add.tmpl", gin.H{
+		c.HTML(http.StatusOK, "peers-add.tmpl", gin.H{
 			"title": "add peer",
 		})
 	})
