@@ -510,6 +510,12 @@ func main() {
 			"title": "Home Page",
 		})
 	})
+	r.GET("/peers", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "peers.tmpl", gin.H{
+			"peers": config.Peers,
+		})
+	})
+
 	if err := r.Run(":5051"); err != nil {
 		panic(err)
 	}
