@@ -512,6 +512,7 @@ func main() {
 	})
 	r.GET("/peers", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "peers.tmpl", gin.H{
+			"title": "peers",
 			"peers": config.Peers,
 		})
 	})
