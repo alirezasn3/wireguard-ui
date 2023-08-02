@@ -519,9 +519,9 @@ func main() {
 			"peers": config.Peers,
 		})
 	})
-	r.GET("/peers/add", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "peers-add.tmpl", gin.H{
-			"title": "add peer",
+	r.GET("/peers/create", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "peers-create.tmpl", gin.H{
+			"title": "create peer",
 		})
 	})
 	r.Static("/public", "/root/wireguard-ui/public")
