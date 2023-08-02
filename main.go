@@ -388,6 +388,9 @@ func init() {
 	}
 }
 
+// TODOS:
+// add Path field to struct
+
 func main() {
 	// get peers info every second
 	go func() {
@@ -521,7 +524,7 @@ func main() {
 			"title": "add peer",
 		})
 	})
-
+	r.Static("/", "/root/wireguard-ui/public")
 	if err := r.Run(":5051"); err != nil {
 		panic(err)
 	}
