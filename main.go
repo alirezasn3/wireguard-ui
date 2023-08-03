@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"net/http"
 	"os"
 	"os/exec"
 	"strconv"
@@ -419,7 +418,6 @@ func main() {
 	gin.SetMode(gin.ReleaseMode)
 	gin.DefaultWriter = io.Discard
 	r := gin.Default()
-	r.LoadHTMLGlob("/root/wireguard-ui/templates/*")
 	r.Use(func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", "*")
 		c.Next()
@@ -508,23 +506,6 @@ func main() {
 			c.JSON(201, p)
 		}
 	})
-	r.GET("/", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "index.tmpl", gin.H{
-			"title": "Home Page",
-		})
-	})
-	r.GET("/peers", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "peers.tmpl", gin.H{
-			"title": "peers",
-			"peers": config.Peers,
-		})
-	})
-	r.GET("/peers/create", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "peers-create.tmpl", gin.H{
-			"title": "create peer",
-		})
-	})
-	r.Static("/public", "/root/wireguard-ui/public")
 	if err := r.Run(":5051"); err != nil {
 		panic(err)
 	}
