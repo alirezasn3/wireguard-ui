@@ -1,13 +1,12 @@
 [Unit]
-Description=wg stats
+Description=wireguard ui
 After=syslog.target network-online.target
 Wants=network-online.target
 
 [Service]
 Type=simple
-PIDFile=/run/wg-stats.pid
-WorkingDirectory=/root/wg-stats
-ExecStart=npm run serve
+PIDFile=/run/wg-stats-api.pid
+ExecStart=/root/wg-stats/wg-stats /root/wg-stats/
 Restart=on-failure
 RestartSec=5s
 

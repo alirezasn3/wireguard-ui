@@ -15,7 +15,7 @@
     "**/vite.config.ts": true,
     "**/.prettierrc": true,
     "**/.prettierignore": true,
-    "**/svelte.config.js": true,
+    // "**/svelte.config.js": true,
     "**/tailwind.config.js": true,
     "**/postcss.config.js": true,
     "**/app.d.ts": true,
@@ -23,6 +23,6 @@
     "**/app.css": true,
     "public/.gitignore": true,
     "**/package.json": true,
-    "**/static": true
+    // "**/static": true
   }
 }
