@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -418,7 +419,7 @@ func main() {
 	gin.SetMode(gin.ReleaseMode)
 	gin.DefaultWriter = io.Discard
 	r := gin.Default()
-	r.Static("/", "/root/wireguard-ui/public/build")
+	r.Use(static.Serve("/", static.LocalFile("/root/wireguard-ui/public/build", false)))
 	r.Use(func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", "*")
 		c.Next()
