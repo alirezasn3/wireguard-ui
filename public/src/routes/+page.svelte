@@ -41,7 +41,7 @@
 	}
 
 	setInterval(async () => {
-		const res = await fetch('http://my.stats:5051/api/stats');
+		const res = await fetch(import.meta.env.MODE ? 'http://my.stats:5051/api/stats' : '/api/stats');
 		if (res.status === 200) {
 			const data = await res.json();
 			peers = Object.values(data.peers as Peer[]);
