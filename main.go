@@ -382,6 +382,7 @@ func init() {
 		panic(err)
 	}
 	if len(data) == 0 {
+		os.MkdirAll("/root/configs", 0700)
 		p, err := createPeer("Admin-0")
 		if err != nil {
 			panic(err)
