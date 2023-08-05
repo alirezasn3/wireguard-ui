@@ -238,7 +238,7 @@ func getPeers() {
 		// update current rx and tx
 		newTotalTx, _ = strconv.ParseUint(string(info[5]), 10, 64)
 		newTotalRx, _ = strconv.ParseUint(string(info[6]), 10, 64)
-		fmt.Printf("total rx: %d\n", newTotalRx)
+		fmt.Printf("new total rx: %d\nprevious total rx:%d", newTotalRx, config.Peers[publicKey].TotalRx)
 		config.Peers[publicKey].CurrentRx = newTotalRx - config.Peers[publicKey].TotalRx
 		config.Peers[publicKey].CurrentTx = newTotalTx - config.Peers[publicKey].TotalTx
 
