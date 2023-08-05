@@ -381,18 +381,22 @@ func init() {
 		panic(err)
 	}
 	if len(data) == 0 {
-		os.MkdirAll("/root/configs", 0700)
-		p, err := createPeer("Admin-0")
+		err := os.MkdirAll("/root/configs", 0700)
 		if err != nil {
 			panic(err)
 		}
-		config := fmt.Sprintf("[Interface]\nPrivateKey = %s\nAddress = %s\n[Peer]\nPublicKey = %s\nPresharedKey = %s\nAllowedIPs = 0.0.0.0/0\nEndpoint = %s", p.PrivateKey, p.Address, config.ServerPublicKey, p.PresharedKey, config.ServerEndpoint)
-		err = os.WriteFile("/root/configs/Admin-0.conf", []byte(config), 0644)
-		if err != nil {
-			panic(err)
+		for _, a := range config.Admins {
+			p, err := createPeer(a)
+			if err != nil {
+				panic(err)
+			}
+			config := fmt.Sprintf("[Interface]\nPrivateKey = %s\nAddress = %s\n[Peer]\nPublicKey = %s\nPresharedKey = %s\nAllowedIPs = 0.0.0.0/0\nEndpoint = %s", p.PrivateKey, p.Address, config.ServerPublicKey, p.PresharedKey, config.ServerEndpoint)
+			err = os.WriteFile(fmt.Sprintf("/root/configs/%s.conf", a), []byte(config), 0644)
+			if err != nil {
+				panic(err)
+			}
+			fmt.Printf("Created new peer in /root/configs/%s.conf\nUse it to connect Wireguard UI admin panel.\n", a)
 		}
-		fmt.Println(config)
-		fmt.Println("Created new peer in /root/configs/Admin-0.conf\nUse it to connect Wireguard UI admin panel.")
 	}
 	for _, p := range data {
 		config.Peers[p.PublicKey] = &p
