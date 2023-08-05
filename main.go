@@ -42,19 +42,21 @@ type Config struct {
 }
 
 type Peer struct {
-	ID              primitive.ObjectID `bson:"_id" json:"id,omitempty"`
-	Name            string             `bson:"name,omitempty" json:"name"`
-	PrivateKey      string             `bson:"privatekey,omitempty" json:"privatekey"`
-	PublicKey       string             `bson:"publicKey,omitempty" json:"publicKey"`
-	PresharedKey    string             `bson:"presharedKey,omitempty" json:"presharedKey"`
-	Address         string             `bson:"Address,omitempty" json:"Address"`
-	ExpiresAt       uint64             `bson:"expiresAt,omitempty" json:"expiresAt"`
-	LatestHandshake uint64             `bson:"-" json:"latestHandshake"`
-	TotalRx         uint64             `json:"totalRx"`
-	TotalTx         uint64             `json:"totalTx"`
-	CurrentRx       uint64             `bson:"-" json:"currentRx"`
-	CurrentTx       uint64             `bson:"-" json:"currentTx"`
-	Suspended       bool               `bson:"suspended,omitempty" json:"suspended"`
+	ID                 primitive.ObjectID `bson:"_id" json:"id,omitempty"`
+	Name               string             `bson:"name,omitempty" json:"name"`
+	PrivateKey         string             `bson:"privatekey,omitempty" json:"privatekey"`
+	PublicKey          string             `bson:"publicKey,omitempty" json:"publicKey"`
+	PresharedKey       string             `bson:"presharedKey,omitempty" json:"presharedKey"`
+	Address            string             `bson:"Address,omitempty" json:"Address"`
+	ExpiresAt          uint64             `bson:"expiresAt,omitempty" json:"expiresAt"`
+	LatestHandshake    uint64             `bson:"-" json:"latestHandshake"`
+	TotalRx            uint64             `bson:"-" json:"totalRx"`
+	TotalTx            uint64             `bson:"-" json:"totalTx"`
+	CurrentRx          uint64             `bson:"-" json:"currentRx"`
+	CurrentTx          uint64             `bson:"-" json:"currentTx"`
+	Suspended          bool               `bson:"suspended,omitempty" json:"suspended"`
+	RemainingUsage     uint64             `bson:"remainingUsage" json:"remainingUsage"`
+	UsageBytesToDeduct uint64
 }
 
 type IPAddress struct {
@@ -149,13 +151,14 @@ func createPeer(name string) (*Peer, error) {
 
 	// add peer
 	config.Peers[clientPublicKey] = &Peer{
-		ID:           primitive.NewObjectID(),
-		Name:         name,
-		PublicKey:    clientPublicKey,
-		PrivateKey:   clientPrivateKey,
-		PresharedKey: presharedKey,
-		Address:      a.ToString() + "/32",
-		ExpiresAt:    uint64(time.Now().Unix() + 60*60*24*30),
+		ID:             primitive.NewObjectID(),
+		Name:           name,
+		PublicKey:      clientPublicKey,
+		PrivateKey:     clientPrivateKey,
+		PresharedKey:   presharedKey,
+		Address:        a.ToString() + "/32",
+		ExpiresAt:      uint64(time.Now().Unix() + 60*60*24*30),
+		RemainingUsage: 50000000 * 1024,
 	}
 
 	// update config file
@@ -240,6 +243,9 @@ func getPeers() {
 		newTotalRx, _ = strconv.ParseUint(string(info[6]), 10, 64)
 		config.Peers[publicKey].CurrentRx = newTotalRx - config.Peers[publicKey].TotalRx
 		config.Peers[publicKey].CurrentTx = newTotalTx - config.Peers[publicKey].TotalTx
+
+		// update the number of bytes that must be deducted from db
+		config.Peers[publicKey].UsageBytesToDeduct += config.Peers[publicKey].CurrentRx
 
 		// update latest handshake
 		config.Peers[publicKey].LatestHandshake, _ = strconv.ParseUint(string(info[4]), 10, 64)
@@ -409,11 +415,13 @@ func main() {
 		for range time.NewTicker(time.Minute).C {
 			var err error
 			var p *Peer
-			for _, p = range config.Peers {
+			var i string
+			for i, p = range config.Peers {
+				config.Peers[i].RemainingUsage -= p.UsageBytesToDeduct
 				_, err = config.Collection.UpdateOne(
 					context.TODO(),
 					bson.M{"publicKey": p.PublicKey},
-					bson.M{"$set": bson.M{"totalRx": p.TotalRx, "totalTx": p.TotalTx}})
+					bson.M{"$set": bson.M{"totalRx": p.TotalRx, "totalTx": p.TotalTx, "remainingBytes": p.RemainingUsage}})
 				if err != nil {
 					fmt.Println(err)
 				}
