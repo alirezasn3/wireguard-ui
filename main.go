@@ -387,11 +387,12 @@ func init() {
 		if err != nil {
 			panic(err)
 		}
-		config := fmt.Sprintf("[Interface]\nPrivateKey = %s\nAddress = %s\n[Peer]\nPublicKey = %s\nAllowedIPs = 0.0.0.0/0\nEndpoint = %s", p.PrivateKey, p.Address, config.ServerPublicKey, config.ServerEndpoint)
+		config := fmt.Sprintf("[Interface]\nPrivateKey = %s\nAddress = %s\n[Peer]\nPublicKey = %s\nPresharedKey = %s\nAllowedIPs = 0.0.0.0/0\nEndpoint = %s", p.PrivateKey, p.Address, config.ServerPublicKey, p.PresharedKey, config.ServerEndpoint)
 		err = os.WriteFile("/root/configs/Admin-0.conf", []byte(config), 0644)
 		if err != nil {
 			panic(err)
 		}
+		fmt.Println(config)
 		fmt.Println("Created new peer in /root/configs/Admin-0.conf\nUse it to connect Wireguard UI admin panel.")
 	}
 	for _, p := range data {
