@@ -3,6 +3,7 @@ module wireguard-ui
 go 1.20
 
 require (
+	github.com/gin-contrib/static v0.0.1
 	github.com/gin-gonic/gin v1.9.1
 	go.mongodb.org/mongo-driver v1.12.0
 	golang.org/x/exp v0.0.0-20230728194245-b0cb94b80691

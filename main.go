@@ -47,7 +47,7 @@ type Peer struct {
 	PrivateKey      string             `bson:"privatekey,omitempty" json:"privatekey"`
 	PublicKey       string             `bson:"publicKey,omitempty" json:"publicKey"`
 	PresharedKey    string             `bson:"presharedKey,omitempty" json:"presharedKey"`
-	AllowedIps      string             `bson:"allowedIps,omitempty" json:"allowedIps"`
+	Address         string             `bson:"Address,omitempty" json:"Address"`
 	ExpiresAt       uint64             `bson:"expiresAt,omitempty" json:"expiresAt"`
 	LatestHandshake uint64             `bson:"-" json:"latestHandshake"`
 	TotalRx         uint64             `json:"totalRx"`
@@ -156,7 +156,7 @@ func createPeer(name string) (*Peer, error) {
 		PublicKey:    clientPublicKey,
 		PrivateKey:   clientPrivateKey,
 		PresharedKey: presharedKey,
-		AllowedIps:   a.ToString() + "/32",
+		Address:      a.ToString() + "/32",
 		ExpiresAt:    uint64(time.Now().Unix() + 60*60*24*30),
 	}
 
@@ -332,7 +332,7 @@ func getPeers() {
 
 func findPeerNameByIp(ip string) string {
 	for _, p := range config.Peers {
-		for _, aip := range strings.Split(p.AllowedIps, ",") {
+		for _, aip := range strings.Split(p.Address, ",") {
 			if strings.Split(aip, "/")[0] == ip {
 				return p.Name
 			}
@@ -381,6 +381,18 @@ func init() {
 	if err = cursor.All(context.TODO(), &data); err != nil {
 		panic(err)
 	}
+	if len(data) == 0 {
+		p, err := createPeer("Admin-0")
+		if err != nil {
+			panic(err)
+		}
+		config := fmt.Sprintf("[Interface]\nPrivateKey = %s\nAddress = %s\n[Peer]\nPublicKey = %s\nAllowedIPs = 0.0.0.0/0\nEndpoint = %s", p.PrivateKey, p.Address, config.ServerPublicKey, config.ServerEndpoint)
+		err = os.WriteFile("/root/configs/Admin-0.conf", []byte(config), 0644)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println("Created new peer in /root/configs/Admin-0.conf\nUse it to connect Wireguard UI admin panel.")
+	}
 	for _, p := range data {
 		config.Peers[p.PublicKey] = &p
 		config.Peers[p.PublicKey].PreviousTotalRx = p.TotalRx
@@ -389,7 +401,7 @@ func init() {
 }
 
 // TODOS:
-// add Path field to struct
+// add Path field to config struct
 
 func main() {
 	// get peers info every second
