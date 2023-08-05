@@ -55,8 +55,6 @@ type Peer struct {
 	CurrentRx       uint64             `bson:"-" json:"currentRx"`
 	CurrentTx       uint64             `bson:"-" json:"currentTx"`
 	Suspended       bool               `bson:"suspended,omitempty" json:"suspended"`
-	PreviousTotalRx uint64
-	PreviousTotalTx uint64
 }
 
 type IPAddress struct {
@@ -226,14 +224,13 @@ func getPeers() {
 	var newTotalRx uint64
 	for _, p := range peerLines {
 		info := strings.Split(p, "\t")
+
+		// find public key
 		publicKey = info[0]
 
 		if config.Peers[publicKey] == nil {
 			config.Peers[publicKey] = &Peer{}
 		}
-
-		// find public key
-		publicKey = info[0]
 
 		// update preshared key
 		config.Peers[publicKey].PresharedKey = strings.TrimSpace(info[1])
@@ -241,15 +238,12 @@ func getPeers() {
 		// update current rx and tx
 		newTotalTx, _ = strconv.ParseUint(string(info[5]), 10, 64)
 		newTotalRx, _ = strconv.ParseUint(string(info[6]), 10, 64)
+		fmt.Printf("total rx: %d\n", newTotalRx)
 		config.Peers[publicKey].CurrentRx = newTotalRx - config.Peers[publicKey].TotalRx
 		config.Peers[publicKey].CurrentTx = newTotalTx - config.Peers[publicKey].TotalTx
 
 		// update latest handshake
 		config.Peers[publicKey].LatestHandshake, _ = strconv.ParseUint(string(info[4]), 10, 64)
-
-		// update total rx and tx
-		config.Peers[publicKey].TotalTx = newTotalTx + config.Peers[publicKey].PreviousTotalTx
-		config.Peers[publicKey].TotalRx = newTotalRx + config.Peers[publicKey].PreviousTotalRx
 
 		// update servers total and current rx and tx
 		totalRx += config.Peers[publicKey].TotalRx
@@ -397,8 +391,6 @@ func init() {
 	}
 	for _, p := range data {
 		config.Peers[p.PublicKey] = &p
-		config.Peers[p.PublicKey].PreviousTotalRx = p.TotalRx
-		config.Peers[p.PublicKey].PreviousTotalTx = p.TotalTx
 	}
 }
 
