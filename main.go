@@ -18,18 +18,16 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"golang.org/x/exp/slices"
 )
 
 var config Config
 
 type Config struct {
-	MongoURI             string   `json:"mongoURI"`
-	DBName               string   `json:"dbName"`
-	CollectionName       string   `json:"collectionName"`
-	Admins               []string `json:"admins"`
-	RefreshInterval      int      `json:"refreshInterval"`
-	InterfaceName        string   `json:"interfaceName"`
+	MongoURI             string `json:"mongoURI"`
+	DBName               string `json:"dbName"`
+	CollectionName       string `json:"collectionName"`
+	RefreshInterval      int    `json:"refreshInterval"`
+	InterfaceName        string `json:"interfaceName"`
 	Collection           *mongo.Collection
 	Peers                map[string]*Peer
 	TotalRx              uint64
@@ -56,7 +54,8 @@ type Peer struct {
 	CurrentTx          uint64             `bson:"-" json:"currentTx"`
 	Suspended          bool               `bson:"suspended,omitempty" json:"suspended"`
 	RemainingUsage     uint64             `bson:"remainingUsage" json:"remainingUsage"`
-	UsageBytesToDeduct uint64
+	UsageBytesToDeduct uint64             `bson:"-" json:"-"`
+	IsAdmin            bool               `bson:"isAdmin" json:"isAdmin"`
 }
 
 type IPAddress struct {
@@ -329,24 +328,24 @@ func getPeers() {
 	config.CurrentTx = currentTx
 }
 
-func findPeerNameByIp(ip string) string {
+func findPeerByIp(ip string) *Peer {
 	for _, p := range config.Peers {
 		for _, aip := range strings.Split(p.Address, ",") {
 			if strings.Split(aip, "/")[0] == ip {
-				return p.Name
+				return p
 			}
 		}
 	}
-	return ""
+	return nil
 }
 
-func findPeerPublicKeyByName(name string) string {
-	for pk, p := range config.Peers {
+func findPeerByName(name string) *Peer {
+	for _, p := range config.Peers {
 		if strings.Contains(p.Name, name) {
-			return pk
+			return p
 		}
 	}
-	return ""
+	return nil
 }
 
 func init() {
@@ -385,18 +384,16 @@ func init() {
 		if err != nil {
 			panic(err)
 		}
-		for _, a := range config.Admins {
-			p, err := createPeer(a)
-			if err != nil {
-				panic(err)
-			}
-			config := fmt.Sprintf("[Interface]\nPrivateKey = %s\nAddress = %s\n[Peer]\nPublicKey = %s\nPresharedKey = %s\nAllowedIPs = 0.0.0.0/0\nEndpoint = %s", p.PrivateKey, p.Address, config.ServerPublicKey, p.PresharedKey, config.ServerEndpoint)
-			err = os.WriteFile(fmt.Sprintf("/root/configs/%s.conf", a), []byte(config), 0644)
-			if err != nil {
-				panic(err)
-			}
-			fmt.Printf("Created new peer in /root/configs/%s.conf\nUse it to connect Wireguard UI admin panel.\n", a)
+		p, err := createPeer("Admin-0")
+		if err != nil {
+			panic(err)
 		}
+		config := fmt.Sprintf("[Interface]\nPrivateKey = %s\nAddress = %s\nDNS = 1.1.1.1\nMTU = 1384\n[Peer]\nPublicKey = %s\nPresharedKey = %s\nAllowedIPs = 0.0.0.0/0\nEndpoint = %s\n", p.PrivateKey, p.Address, config.ServerPublicKey, p.PresharedKey, config.ServerEndpoint)
+		err = os.WriteFile("/root/configs/Admin-0.conf", []byte(config), 0644)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println("Created new peer in /root/configs/Admin-0.conf\nUse it to connect Wireguard UI admin panel.")
 	}
 	for _, p := range data {
 		config.Peers[p.PublicKey] = &p
@@ -425,7 +422,7 @@ func main() {
 				_, err = config.Collection.UpdateOne(
 					context.TODO(),
 					bson.M{"publicKey": p.PublicKey},
-					bson.M{"$set": bson.M{"totalRx": p.TotalRx, "totalTx": p.TotalTx, "remainingBytes": p.RemainingUsage}})
+					bson.M{"$set": bson.M{"totalRx": p.TotalRx, "totalTx": p.TotalTx, "remainingUsage": p.RemainingUsage}})
 				if err != nil {
 					fmt.Println(err)
 				}
@@ -446,14 +443,14 @@ func main() {
 		if ra == "" {
 			ra = c.Request.RemoteAddr
 		}
-		name := findPeerNameByIp(strings.Split(ra, ":")[0])
+		peer := findPeerByIp(strings.Split(ra, ":")[0])
 		tempPeers := make(map[string]*Peer)
-		isAdmin := slices.Contains(config.Admins, name)
-		if isAdmin {
+
+		if peer.IsAdmin {
 			tempPeers = config.Peers
 		} else {
 			for pk, p := range config.Peers {
-				if strings.Contains(p.Name, strings.Split(name, "-")[0]+"-") {
+				if strings.HasPrefix(p.Name, strings.Split(peer.Name, "-")[0]+"-") {
 					tempPeers[pk] = p
 				}
 			}
@@ -464,8 +461,8 @@ func main() {
 		data["totalTx"] = config.TotalTx
 		data["currentRx"] = config.CurrentRx
 		data["currentTx"] = config.CurrentTx
-		data["isAdmin"] = isAdmin
-		data["name"] = name
+		data["isAdmin"] = peer.IsAdmin
+		data["name"] = peer.Name
 		c.JSON(200, data)
 	})
 	r.POST("/api/peers", func(c *gin.Context) {
@@ -473,9 +470,8 @@ func main() {
 		if ra == "" {
 			ra = c.Request.RemoteAddr
 		}
-		name := findPeerNameByIp(strings.Split(ra, ":")[0])
-		isAdmin := slices.Contains(config.Admins, name)
-		if !isAdmin {
+		peer := findPeerByIp(strings.Split(ra, ":")[0])
+		if !peer.IsAdmin {
 			c.AbortWithStatus(403)
 			return
 		}
@@ -509,7 +505,7 @@ func main() {
 	})
 	r.GET("/api/peers/:name", func(c *gin.Context) {
 		name := c.Param("name")
-		if p, ok := config.Peers[findPeerPublicKeyByName(name)]; ok {
+		if p := findPeerByName(name); p != nil {
 			c.JSON(200, p)
 		} else {
 			c.AbortWithStatus(400)
