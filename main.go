@@ -40,19 +40,20 @@ type Config struct {
 }
 
 type Peer struct {
-	ID                 primitive.ObjectID `bson:"_id" json:"id,omitempty"`
-	Name               string             `bson:"name,omitempty" json:"name"`
-	PrivateKey         string             `bson:"privatekey,omitempty" json:"privatekey"`
-	PublicKey          string             `bson:"publicKey,omitempty" json:"publicKey"`
-	PresharedKey       string             `bson:"presharedKey,omitempty" json:"presharedKey"`
-	Address            string             `bson:"Address,omitempty" json:"Address"`
-	ExpiresAt          uint64             `bson:"expiresAt,omitempty" json:"expiresAt"`
+	ID                 primitive.ObjectID `bson:"_id" json:"id"`
+	Name               string             `bson:"name" json:"name"`
+	PrivateKey         string             `bson:"privatekey" json:"privatekey"`
+	PublicKey          string             `bson:"publicKey" json:"publicKey"`
+	PresharedKey       string             `bson:"presharedKey" json:"presharedKey"`
+	Address            string             `bson:"Address" json:"Address"`
+	ExpiresAt          uint64             `bson:"expiresAt" json:"expiresAt"`
 	LatestHandshake    uint64             `bson:"-" json:"latestHandshake"`
-	TotalRx            uint64             `bson:"-" json:"totalRx"`
-	TotalTx            uint64             `bson:"-" json:"totalTx"`
+	TotalRx            uint64             `bson:"-" json:"-"`
+	TotalTx            uint64             `bson:"-" json:"-"`
 	CurrentRx          uint64             `bson:"-" json:"currentRx"`
 	CurrentTx          uint64             `bson:"-" json:"currentTx"`
-	Suspended          bool               `bson:"suspended,omitempty" json:"suspended"`
+	Suspended          bool               `bson:"suspended" json:"suspended"`
+	AllowedUsage       uint64             `bson:"allowedUsage" json:"allowedUsage"`
 	RemainingUsage     uint64             `bson:"remainingUsage" json:"remainingUsage"`
 	UsageBytesToDeduct uint64             `bson:"-" json:"-"`
 	IsAdmin            bool               `bson:"isAdmin" json:"isAdmin"`
@@ -158,6 +159,7 @@ func createPeer(name string) (*Peer, error) {
 		Address:        a.ToString() + "/32",
 		ExpiresAt:      uint64(time.Now().Unix() + 60*60*24*30),
 		RemainingUsage: 50000000 * 1024,
+		AllowedUsage:   50000000 * 1024,
 	}
 
 	// check if its the first config

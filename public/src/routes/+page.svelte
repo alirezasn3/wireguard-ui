@@ -358,11 +358,11 @@
 	{#if showCreatPeer}
 		<div
 			transition:fade={{ duration: 200 }}
-			class="fixed left-0 top-16 flex h-[calc(100vh-64px)] w-[100vw] items-center justify-center bg-slate-950 bg-opacity-95 p-4"
+			class="fixed left-0 top-16 flex h-[calc(100vh-64px)] w-[100vw] items-center justify-center bg-slate-950 bg-opacity-95 p-4 pb-0"
 		>
 			<div
 				transition:fly={{ y: 200, duration: 200 }}
-				class="m-4 h-full w-full rounded-lg bg-slate-900"
+				class="m-4 mb-0 h-full w-full rounded-lg bg-slate-900"
 			>
 				<div class="flex items-center justify-between border-b-2 border-slate-800 px-8 py-2">
 					<div class="text-2xl font-black">Crete Peer</div>
