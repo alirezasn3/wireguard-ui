@@ -388,6 +388,7 @@ func init() {
 		if err != nil {
 			panic(err)
 		}
+		p.IsAdmin = true
 		config := fmt.Sprintf("[Interface]\nPrivateKey = %s\nAddress = %s\nDNS = 1.1.1.1\nMTU = 1384\n[Peer]\nPublicKey = %s\nPresharedKey = %s\nAllowedIPs = 0.0.0.0/0\nEndpoint = %s\n", p.PrivateKey, p.Address, config.ServerPublicKey, p.PresharedKey, config.ServerEndpoint)
 		err = os.WriteFile("/root/configs/Admin-0.conf", []byte(config), 0644)
 		if err != nil {
