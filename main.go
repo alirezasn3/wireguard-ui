@@ -248,6 +248,10 @@ func getPeers() {
 		config.Peers[publicKey].CurrentRx = newTotalRx - config.Peers[publicKey].TotalRx
 		config.Peers[publicKey].CurrentTx = newTotalTx - config.Peers[publicKey].TotalTx
 
+		// update total rx and tx
+		config.Peers[publicKey].TotalRx = newTotalRx
+		config.Peers[publicKey].TotalTx = newTotalTx
+
 		// update the number of bytes that must be deducted from db
 		config.Peers[publicKey].UsageBytesToDeduct += config.Peers[publicKey].CurrentRx
 
@@ -424,6 +428,7 @@ func main() {
 			var i string
 			for i, p = range config.Peers {
 				config.Peers[i].RemainingUsage -= p.UsageBytesToDeduct
+				p.UsageBytesToDeduct = 0
 				_, err = config.Collection.UpdateOne(
 					context.TODO(),
 					bson.M{"publicKey": p.PublicKey},
