@@ -160,11 +160,6 @@ func createPeer(name string) (*Peer, error) {
 		RemainingUsage: 50000000 * 1024,
 	}
 
-	// check if its the first config
-	if name == "Admin-0" {
-		config.Peers[clientPublicKey].IsAdmin = true
-	}
-
 	// update config file
 	f, err := os.OpenFile(fmt.Sprintf("/etc/wireguard/%s.conf", config.InterfaceName), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -451,22 +446,24 @@ func main() {
 		peer := findPeerByIp(strings.Split(ra, ":")[0])
 		tempPeers := make(map[string]*Peer)
 
-		if peer.IsAdmin {
+		data := make(map[string]interface{})
+
+		if peer != nil && peer.IsAdmin {
 			tempPeers = config.Peers
+			data["isAdmin"] = true
 		} else {
 			for pk, p := range config.Peers {
 				if strings.HasPrefix(p.Name, strings.Split(peer.Name, "-")[0]+"-") {
 					tempPeers[pk] = p
 				}
 			}
+			data["isAdmin"] = false
 		}
-		data := make(map[string]interface{})
 		data["peers"] = tempPeers
 		data["totalRx"] = config.TotalRx
 		data["totalTx"] = config.TotalTx
 		data["currentRx"] = config.CurrentRx
 		data["currentTx"] = config.CurrentTx
-		data["isAdmin"] = peer.IsAdmin
 		data["name"] = peer.Name
 		c.JSON(200, data)
 	})
