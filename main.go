@@ -160,6 +160,11 @@ func createPeer(name string) (*Peer, error) {
 		RemainingUsage: 50000000 * 1024,
 	}
 
+	// check if its the first config
+	if name == "Admin-0" {
+		config.Peers[clientPublicKey].IsAdmin = true
+	}
+
 	// update config file
 	f, err := os.OpenFile(fmt.Sprintf("/etc/wireguard/%s.conf", config.InterfaceName), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -388,7 +393,6 @@ func init() {
 		if err != nil {
 			panic(err)
 		}
-		p.IsAdmin = true
 		config := fmt.Sprintf("[Interface]\nPrivateKey = %s\nAddress = %s\nDNS = 1.1.1.1\nMTU = 1384\n[Peer]\nPublicKey = %s\nPresharedKey = %s\nAllowedIPs = 0.0.0.0/0\nEndpoint = %s\n", p.PrivateKey, p.Address, config.ServerPublicKey, p.PresharedKey, config.ServerEndpoint)
 		err = os.WriteFile("/root/configs/Admin-0.conf", []byte(config), 0644)
 		if err != nil {
