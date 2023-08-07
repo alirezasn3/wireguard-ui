@@ -300,6 +300,11 @@
 				</div>
 				<div class="flex flex-col p-4">
 					{#if editingCurrentPeer}
+						<div class="mb-4">
+							<span class="absolute h-1 w-4 origin-right rotate-45 rounded bg-white" />
+							<span class="absolute h-1 w-8 rounded bg-white" />
+							<span class="absolute h-1 w-4 origin-left -rotate-45 rounded bg-white" />
+						</div>
 						<div class="mb-2">Peer's Name</div>
 						<div class="mb-4 w-full">
 							<input type="text" bind:value={newName} class="w-full rounded px-2 py-1 text-black" />
@@ -350,10 +355,9 @@
 							<button
 								on:click={() => {
 									if (currentPeer) {
-										newExpiry = (
-											((currentPeer.expiresAt || 0) - Date.now() / 1000) /
-											(3600 * 24)
-										).toString();
+										newExpiry = (((currentPeer.expiresAt || 0) - Date.now() / 1000) / (3600 * 24))
+											.toFixed(2)
+											.toString();
 										newAllowedUsage = Math.trunc(currentPeer.allowedUsage / 1024000000).toString();
 										newName = currentPeer.name;
 									}
