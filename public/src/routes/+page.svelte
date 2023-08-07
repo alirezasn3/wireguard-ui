@@ -2,6 +2,7 @@
 	import '../app.css';
 	import type { DashboardInfo, Peer } from '../types';
 	import { fade, fly } from 'svelte/transition';
+	import qr from 'qrcode';
 
 	let peers: Peer[] = [];
 	let groups: { [key: string]: Peer[] } = {};
@@ -231,6 +232,9 @@
 								on:click={() => {
 									currentPeer = peer;
 									document.body.style.overflowY = 'hidden';
+									setTimeout(() => {
+										qr.toCanvas(document.getElementById('qr-canvas'), 'test');
+									}, 1000);
 								}}
 								class="{Math.trunc(peer.expiresAt - Date.now() / 1000) < 0 &&
 									'text-red-500'} hover:bg-slate-800"
@@ -405,6 +409,7 @@
 							<div class="font-bold">Expiry:</div>
 							<div class="ml-4 text-sm text-slate-300">{formatSeconds(currentPeer.expiresAt)}</div>
 						</div>
+						<canvas id="qr-canvas" />
 					{/if}
 				</div>
 			</div>
