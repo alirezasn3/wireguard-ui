@@ -206,7 +206,7 @@ func createPeer(name string, isAdmin bool) (*Peer, error) {
 
 // func renamePeer(name string, newName string) {}
 
-func getPeers() {
+func updatePeers() {
 	// get peers info from wg
 	cmd := exec.Command("wg", "show", config.InterfaceName, "dump")
 	bytes, err := cmd.Output()
@@ -234,11 +234,10 @@ func getPeers() {
 		publicKey = info[0]
 
 		if config.Peers[publicKey] == nil {
-			config.Peers[publicKey] = &Peer{}
+			continue
 		}
 
-		// update preshared key
-		config.Peers[publicKey].PresharedKey = strings.TrimSpace(info[1])
+		fmt.Println(config.Peers[publicKey].Name, config.Peers[publicKey].Address)
 
 		// update current rx and tx
 		newTotalTx, _ = strconv.ParseUint(string(info[5]), 10, 64)
@@ -337,7 +336,6 @@ func getPeers() {
 
 func findPeerByIp(ip string) *Peer {
 	for _, p := range config.Peers {
-		fmt.Println(p.Name, p.Address)
 		for _, cidr := range strings.Split(p.Address, ",") {
 			if strings.Split(cidr, "/")[0] == ip {
 				return p
@@ -417,7 +415,7 @@ func main() {
 	// get peers info every second
 	go func() {
 		for range time.NewTicker(time.Second).C {
-			getPeers()
+			updatePeers()
 		}
 	}()
 
