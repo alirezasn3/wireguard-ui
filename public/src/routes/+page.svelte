@@ -93,13 +93,11 @@
 				method: 'POST',
 				body: JSON.stringify({ isAdmin })
 			});
-			if (res.status === 200) {
+			if (res.status === 201) {
 				const data = await res.json();
-				console.log(data);
-				currentPeer = data;
 				setTimeout(() => {
-					editingCurrentPeer = true;
-				}, 200);
+					currentPeer = data;
+				}, 400);
 			}
 		} catch (error) {
 			console.log(error);
