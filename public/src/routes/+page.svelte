@@ -93,7 +93,7 @@
 				method: 'POST',
 				body: JSON.stringify({ isAdmin })
 			});
-			if (res.status === 200) {
+			if (res.status === 201) {
 				const data = await res.json();
 				currentPeer = data;
 			} else if (res.status === 400) {
