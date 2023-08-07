@@ -282,9 +282,9 @@
 		>
 			<div
 				transition:fly={{ y: 200, duration: 200 }}
-				class="m-4 mb-0 h-full w-full overflow-y-auto rounded-lg bg-slate-900"
+				class="m-4 mb-0 h-full w-full rounded-lg bg-slate-900"
 			>
-				<div class="flex items-center justify-between rounded-t-lg bg-slate-800 px-8 py-2">
+				<div class="flex items-center overflow-y-auto justify-between rounded-t-lg bg-slate-800 px-8 py-2">
 					<div class="text-2xl font-black">{currentPeer.name}</div>
 					<button
 						on:click={() => {
@@ -292,20 +292,20 @@
 							editingCurrentPeer = false;
 							document.body.style.overflowY = 'auto';
 						}}
-						class="relative h-12 w-12 rounded-2xl hover:cursor-pointer"
+						class="relative h-12 w-12 hover:cursor-pointer"
 					>
 						<span class="absolute h-1 w-8 rotate-45 rounded bg-white" />
 						<span class="absolute h-1 w-8 -rotate-45 rounded bg-white" />
 					</button>
 				</div>
-				<div class="flex flex-col p-4">
+				<div class="flex flex-col justify-start p-4">
 					{#if editingCurrentPeer}
 						<button
 							on:click={() => (editingCurrentPeer = false)}
-							class="mb-8 mt-2 hover:cursor-pointer"
+							class="relative mb-8 mt-2 hover:cursor-pointer"
 						>
 							<span class="absolute h-1 w-4 origin-left -rotate-45 rounded bg-white" />
-							<span class="absolute h-1 w-6 rounded bg-white" />
+							<span class="absolute h-1 w-6 -translate-x-1 rounded bg-white" />
 							<span class="absolute h-1 w-4 origin-left rotate-45 rounded bg-white" />
 						</button>
 						<div class="mb-2">Peer's Name</div>
@@ -418,9 +418,9 @@
 		>
 			<div
 				transition:fly={{ y: 200, duration: 200 }}
-				class="m-4 mb-0 h-full w-full overflow-y-auto rounded-lg bg-slate-900"
+				class="m-4 mb-0 h-full w-full rounded-lg bg-slate-900"
 			>
-				<div class="flex items-center justify-between border-b-2 border-slate-800 px-8 py-2">
+				<div class="flex items-center justify-between overflow-y-auto border-b-2 border-slate-800 px-8 py-2">
 					<div class="text-2xl font-black">Crete Peer</div>
 					<button
 						on:click={() => {
@@ -428,7 +428,7 @@
 							newIsAdmin = false;
 							document.body.style.overflowY = 'auto';
 						}}
-						class="relative h-12 w-12 rounded-2xl hover:cursor-pointer"
+						class="relative h-12 w-12 hover:cursor-pointer"
 					>
 						<span class="absolute h-1 w-8 rotate-45 rounded bg-white" />
 						<span class="absolute h-1 w-8 -rotate-45 rounded bg-white" />
