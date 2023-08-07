@@ -57,7 +57,6 @@ type Peer struct {
 	RemainingUsage     uint64             `bson:"remainingUsage" json:"remainingUsage"`
 	UsageBytesToDeduct uint64             `bson:"-" json:"-"`
 	IsAdmin            bool               `bson:"isAdmin" json:"isAdmin"`
-	Config             string             `bson:"-" json:"-"`
 }
 
 type IPAddress struct {
@@ -163,7 +162,6 @@ func createPeer(name string, isAdmin bool) (*Peer, error) {
 		AllowedUsage:   50000000 * 1024,
 		IsAdmin:        isAdmin,
 	}
-	config.Peers[clientPublicKey].Config = generateConfig(config.Peers[clientPublicKey])
 
 	// update config file
 	f, err := os.OpenFile(fmt.Sprintf("/etc/wireguard/%s.conf", config.InterfaceName), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
@@ -406,7 +404,6 @@ func init() {
 		fmt.Println("Created new peer in /root/configs/Admin-0.conf\nUse it to connect Wireguard UI admin panel.")
 	}
 	for i, p := range data {
-		data[i].Config = generateConfig(&data[i])
 		config.Peers[p.PublicKey] = &data[i]
 	}
 }
@@ -549,6 +546,14 @@ func main() {
 			c.JSON(400, map[string]interface{}{"error": err.Error()})
 		} else {
 			c.JSON(201, p)
+		}
+	})
+	r.GET("/api/configs/:name", func(c *gin.Context) {
+		name := c.Param("name")
+		if p := findPeerByName(name); p != nil {
+			c.Data(200, "text/plain", []byte(generateConfig(p)))
+		} else {
+			c.AbortWithStatus(400)
 		}
 	})
 	if err := r.Run(":5051"); err != nil {

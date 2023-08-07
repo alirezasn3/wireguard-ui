@@ -46,11 +46,7 @@
 
 	setInterval(async () => {
 		if (currentPeer) {
-			const res = await fetch(
-				import.meta.env.MODE === 'development'
-					? 'http://my.stats:5051/api/peers/' + currentPeer.name
-					: '/api/peers/' + currentPeer.name
-			);
+			const res = await fetch('/api/peers/' + currentPeer.name);
 			if (res.status === 200) {
 				currentPeer = await res.json();
 			}
@@ -136,6 +132,18 @@
 		} catch (error) {
 			console.log(error);
 			updatePeerError = (error as Error).message;
+		}
+	}
+
+	async function getConfig(name: string) {
+		try {
+			const res = await fetch('/api/configs/' + name);
+			if (res.status === 200) {
+				const config = await res.text();
+				return config;
+			}
+		} catch (error) {
+			console.log(error);
 		}
 	}
 </script>
@@ -242,7 +250,6 @@
 								on:click={() => {
 									currentPeer = peer;
 									document.body.style.overflowY = 'hidden';
-									qr.toCanvas(document.getElementById('qr-canvas'), peer.config);
 								}}
 								class="{Math.trunc(peer.expiresAt - Date.now() / 1000) < 0 &&
 									'text-red-500'} hover:bg-slate-800"
@@ -382,6 +389,13 @@
 							>
 							<button class="ml-2 rounded bg-red-500 px-2 py-1 font-bold max-md:text-sm"
 								>DELETE</button
+							>
+							<button
+								on:click={async () => {
+									const config = await getConfig(currentPeer?.config || '');
+									qr.toCanvas(document.getElementById('qr-canvas'), config);
+								}}
+								class="ml-2 rounded bg-red-500 px-2 py-1 font-bold max-md:text-sm">QRCODE</button
 							>
 						</div>
 						<div class="mb-2">
