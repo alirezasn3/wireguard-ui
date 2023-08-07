@@ -3,9 +3,9 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
 	plugins: [sveltekit()],
-	build: {
-		rollupOptions: {
-			external: ['qrcode']
-		}
-	}
+	// build: {
+	// 	rollupOptions: {
+	// 		external: ['qrcode']
+	// 	}
+	// }
 });
