@@ -337,8 +337,8 @@ func getPeers() {
 
 func findPeerByIp(ip string) *Peer {
 	for _, p := range config.Peers {
+		fmt.Println(p.Name, p.Address)
 		for _, cidr := range strings.Split(p.Address, ",") {
-			fmt.Println(strings.Split(cidr, "/")[0], ip)
 			if strings.Split(cidr, "/")[0] == ip {
 				return p
 			}
