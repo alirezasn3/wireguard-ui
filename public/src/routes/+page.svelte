@@ -22,6 +22,7 @@
 	let newName = '';
 	let newExpiry = '';
 	let newAllowedUsage = '';
+	let newIsAdmin = false;
 	let editingCurrentPeer = false;
 	let createPeerError = '';
 	let updatePeerError = '';
@@ -428,20 +429,13 @@
 					<div class="mb-4 w-full">
 						<input type="text" bind:value={newName} class="w-full rounded px-2 py-1 text-black" />
 					</div>
+					<div class="mb-4 flex items-center">
+						<label for="isAdmin">Is Admin</label>
+						<input bind:value={newIsAdmin} type="checkbox" name="isAdmin" id="isAdmin" />
+					</div>
 					<button
 						on:click={async () => {
-							if (currentPeer)
-								await updatePeer(
-									currentPeer.name,
-									newName !== currentPeer.name ? newName : undefined,
-									Math.trunc(Date.now() / 1000 + Number(newExpiry) * 3600 * 24) !==
-										currentPeer.expiresAt
-										? Math.trunc(Date.now() / 1000 + Number(newExpiry) * 3600 * 24)
-										: undefined,
-									Number(newAllowedUsage) * 1024000000 !== currentPeer.allowedUsage
-										? Number(newAllowedUsage) * 1024000000
-										: undefined
-								);
+							if (currentPeer) await createPeer(currentPeer.name, newIsAdmin);
 							if (createPeerError === '') {
 								showCreatPeer = false;
 							}
