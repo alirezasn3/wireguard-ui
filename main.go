@@ -434,7 +434,7 @@ func main() {
 				_, err = config.Collection.UpdateOne(
 					context.TODO(),
 					bson.M{"publicKey": p.PublicKey},
-					bson.M{"$set": bson.M{"totalRx": p.TotalRx, "totalTx": p.TotalTx, "remainingUsage": p.RemainingUsage}})
+					bson.M{"$set": bson.M{"remainingUsage": p.RemainingUsage}})
 				if err != nil {
 					fmt.Println(err)
 				}
