@@ -97,7 +97,7 @@ func (a *IPAddress) Parse(address string) {
 	}
 }
 
-func createPeer(name string) (*Peer, error) {
+func createPeer(name string, isAdmin bool) (*Peer, error) {
 	// check if name is already taken
 	for _, peer := range config.Peers {
 		if name == peer.Name {
@@ -160,11 +160,7 @@ func createPeer(name string) (*Peer, error) {
 		ExpiresAt:      uint64(time.Now().Unix() + 60*60*24*30),
 		RemainingUsage: 50000000 * 1024,
 		AllowedUsage:   50000000 * 1024,
-	}
-
-	// check if its the first config
-	if name == "Admin-0" {
-		config.Peers[clientPublicKey].IsAdmin = true
+		IsAdmin:        isAdmin,
 	}
 
 	// update config file
@@ -395,7 +391,7 @@ func init() {
 		if err != nil {
 			panic(err)
 		}
-		p, err := createPeer("Admin-0")
+		p, err := createPeer("Admin-0", true)
 		if err != nil {
 			panic(err)
 		}
@@ -536,7 +532,14 @@ func main() {
 	})
 	r.POST("/api/peers/:name", func(c *gin.Context) {
 		name := c.Param("name")
-		p, err := createPeer(name)
+		p := &Peer{}
+		err := c.BindJSON(&p)
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(400)
+			return
+		}
+		p, err = createPeer(name, p.IsAdmin)
 		if err != nil {
 			fmt.Println(err)
 			c.JSON(500, map[string]interface{}{"error": err.Error()})

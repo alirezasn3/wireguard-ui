@@ -96,6 +96,9 @@
 				const data = await res.json();
 				console.log(data);
 				currentPeer = data;
+				setTimeout(() => {
+					editingCurrentPeer = true;
+				}, 200);
 			}
 		} catch (error) {
 			console.log(error);
@@ -114,10 +117,7 @@
 				method: 'PATCH',
 				body: JSON.stringify({ name: newName, expiresAt: newExpiry, allowedUsage: newAllowedUsage })
 			});
-			if (res.status === 200) {
-				const data = await res.json();
-				console.log(data);
-			}
+			if (res.status !== 200) updatePeerError = res.status.toString();
 		} catch (error) {
 			console.log(error);
 			updatePeerError = (error as Error).message;
@@ -151,7 +151,10 @@
 		</div>
 		{#if currentPeer === null}
 			<button
-				on:click={() => (showCreatPeer = true)}
+				on:click={() => {
+					newName = '';
+					showCreatPeer = true;
+				}}
 				class="fixed bottom-6 right-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-700 text-lg font-bold hover:cursor-pointer hover:bg-teal-600"
 			>
 				<span class="absolute h-1 w-6 bg-white" />
@@ -314,7 +317,7 @@
 					</div>
 					{#if editingCurrentPeer}
 						<div class="mb-2">Peer's Name</div>
-						<div class="flex w-full">
+						<div class="mb-4 w-full">
 							<input type="text" bind:value={newName} class="w-full rounded px-2 py-1 text-black" />
 						</div>
 						<div class="mb-2">Peer's Expiry</div>
@@ -349,10 +352,15 @@
 											? Number(newAllowedUsage) * 1024000000
 											: undefined
 									);
-								editingCurrentPeer = false;
+								if (updatePeerError === '') {
+									editingCurrentPeer = false;
+								}
 							}}
-							class="ml-auto rounded bg-green-500 px-2 py-1 font-bold">SAVE</button
+							class="mb-4 ml-auto rounded bg-green-500 px-2 py-1 font-bold">SAVE</button
 						>
+						{#if updatePeerError !== ''}
+							<div class="text-bold text-red-500">{updatePeerError}</div>
+						{/if}
 					{:else}
 						<div class="mb-2">
 							<div class="font-bold">Address:</div>
@@ -415,7 +423,35 @@
 						<span class="absolute h-1 w-8 -rotate-45 rounded bg-white" />
 					</button>
 				</div>
-				<div class="flex flex-col p-4" />
+				<div class="flex flex-col p-4">
+					<div class="mb-2">Peer's Name</div>
+					<div class="mb-4 w-full">
+						<input type="text" bind:value={newName} class="w-full rounded px-2 py-1 text-black" />
+					</div>
+					<button
+						on:click={async () => {
+							if (currentPeer)
+								await updatePeer(
+									currentPeer.name,
+									newName !== currentPeer.name ? newName : undefined,
+									Math.trunc(Date.now() / 1000 + Number(newExpiry) * 3600 * 24) !==
+										currentPeer.expiresAt
+										? Math.trunc(Date.now() / 1000 + Number(newExpiry) * 3600 * 24)
+										: undefined,
+									Number(newAllowedUsage) * 1024000000 !== currentPeer.allowedUsage
+										? Number(newAllowedUsage) * 1024000000
+										: undefined
+								);
+							if (createPeerError === '') {
+								showCreatPeer = false;
+							}
+						}}
+						class="mb-4 ml-auto rounded bg-green-500 px-2 py-1 font-bold">CREATE</button
+					>
+					{#if createPeerError !== ''}
+						<div class="text-bold text-red-500">{createPeerError}</div>
+					{/if}
+				</div>
 			</div>
 		</div>
 	{/if}
