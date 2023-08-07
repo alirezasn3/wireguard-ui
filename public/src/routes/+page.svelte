@@ -300,10 +300,10 @@
 				</div>
 				<div class="flex flex-col p-4">
 					{#if editingCurrentPeer}
-						<div class="mb-4">
+						<div class="mb-8 mt-2">
 							<span class="absolute h-1 w-4 origin-right rotate-45 rounded bg-white" />
 							<span class="absolute h-1 w-8 rounded bg-white" />
-							<span class="absolute h-1 w-4 origin-left -rotate-45 rounded bg-white" />
+							<span class="absolute h-1 w-4 origin-right -rotate-45 rounded bg-red-500" />
 						</div>
 						<div class="mb-2">Peer's Name</div>
 						<div class="mb-4 w-full">
