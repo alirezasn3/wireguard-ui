@@ -539,7 +539,7 @@ func main() {
 		p, err = createPeer(name, p.IsAdmin)
 		if err != nil {
 			fmt.Println(err)
-			c.JSON(500, map[string]interface{}{"error": err.Error()})
+			c.JSON(400, map[string]interface{}{"error": err.Error()})
 		} else {
 			c.JSON(201, p)
 		}
