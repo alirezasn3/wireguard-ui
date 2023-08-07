@@ -21,9 +21,10 @@
 	let showCreatPeer = false;
 	let newName = '';
 	let newExpiry = '';
-	let editingName = false;
-	let editingExpiry = false;
+	let newAllowedUsage = '';
+	let editingCurrentPeer = false;
 	let createPeerError = '';
+	let updatePeerError = '';
 
 	$: {
 		peers = peers
@@ -85,16 +86,41 @@
 		return `${totalTeras < 10 ? '0' : ''}${totalTeras.toFixed(2)} TB`;
 	}
 
-	async function createPeer(name: string) {
+	async function createPeer(name: string, isAdmin = false) {
 		try {
-			const res = await fetch('/api/peers/' + name, { method: 'POST' });
+			const res = await fetch('/api/peers/' + name, {
+				method: 'POST',
+				body: JSON.stringify({ isAdmin })
+			});
+			if (res.status === 200) {
+				const data = await res.json();
+				console.log(data);
+				currentPeer = data;
+			}
+		} catch (error) {
+			console.log(error);
+			createPeerError = (error as Error).message;
+		}
+	}
+
+	async function updatePeer(
+		name: string,
+		newName: string | undefined,
+		newExpiry: number | undefined,
+		newAllowedUsage: number | undefined
+	) {
+		try {
+			const res = await fetch('/api/peers/' + name, {
+				method: 'Patch',
+				body: JSON.stringify({ newName, newExpiry, newAllowedUsage })
+			});
 			if (res.status === 200) {
 				const data = await res.json();
 				console.log(data);
 			}
 		} catch (error) {
 			console.log(error);
-			createPeerError = (error as Error).message;
+			updatePeerError = (error as Error).message;
 		}
 	}
 </script>
@@ -245,19 +271,18 @@
 	{#if currentPeer !== null}
 		<div
 			transition:fade={{ duration: 200 }}
-			class="fixed left-0 top-16 flex h-[calc(100vh-64px)] w-[100vw] items-center justify-center bg-slate-950 bg-opacity-95 p-4"
+			class="fixed left-0 top-16 flex h-[calc(100vh-64px)] w-[100vw] items-center justify-center bg-slate-950 bg-opacity-95 p-4 pb-0"
 		>
 			<div
 				transition:fly={{ y: 200, duration: 200 }}
-				class="m-4 h-full w-full rounded-lg bg-slate-900"
+				class="m-4 h-full w-full overflow-y-auto rounded-lg bg-slate-900"
 			>
 				<div class="flex items-center justify-between rounded-t-lg bg-slate-800 px-8 py-2">
 					<div class="text-2xl font-black">{currentPeer.name}</div>
 					<button
 						on:click={() => {
 							currentPeer = null;
-							editingExpiry = false;
-							editingName = false;
+							editingCurrentPeer = false;
 							document.body.style.overflowY = 'auto';
 						}}
 						class="relative h-12 w-12 rounded-2xl hover:cursor-pointer"
@@ -268,61 +293,62 @@
 				</div>
 				<div class="flex flex-col p-4">
 					<div class="mb-4 flex justify-end border-b-2 border-slate-700 pb-4">
-						{#if !editingName}
-							<button
-								on:click={() => {
-									newName = currentPeer?.name || '';
-									editingName = true;
-									editingExpiry = false;
-								}}
-								class="ml-2 rounded bg-orange-500 px-2 py-1 font-bold max-md:text-sm"
-								>EDIT NAME</button
-							>
-						{/if}
-						{#if !editingExpiry}
+						{#if !editingCurrentPeer}
 							<button
 								on:click={() => {
 									newExpiry = Math.trunc(
 										((currentPeer?.expiresAt || 0) - Date.now() / 1000) / (3600 * 24)
 									).toString();
-									editingExpiry = true;
-									editingName = false;
+									editingCurrentPeer = true;
 								}}
-								class="ml-2 rounded bg-orange-500 px-2 py-1 font-bold max-md:text-sm"
-								>EDIT EXPIRY</button
+								class="ml-2 rounded bg-orange-500 px-2 py-1 font-bold max-md:text-sm">EDIT</button
 							>
 						{/if}
 						<button class="ml-2 rounded bg-red-500 px-2 py-1 font-bold max-md:text-sm"
 							>DELETE</button
 						>
 					</div>
-					{#if editingName}
-						<div class="mb-2">Editing Peer's Name</div>
+					{#if editingCurrentPeer}
+						<div class="mb-2">Peer's Name</div>
 						<div class="flex w-full">
 							<input type="text" bind:value={newName} class="w-full rounded px-2 py-1 text-black" />
-							<button
-								on:click={() => {
-									editingName = false;
-								}}
-								class="ml-2 rounded bg-green-500 px-2 py-1 font-bold">SAVE</button
-							>
 						</div>
-					{:else if editingExpiry}
-						<div class="mb-2">Editing Peer's Expiry</div>
-						<div class="flex w-full items-center">
+						<div class="mb-2">Peer's Expiry</div>
+						<div class="mb-4 flex w-full items-center">
 							<input
 								type="text"
 								bind:value={newExpiry}
 								class="w-full rounded-l px-2 py-1 text-black outline-none"
 							/>
 							<div class="rounded-r bg-white px-2 py-1 text-black">days</div>
-							<button
-								on:click={() => {
-									editingExpiry = false;
-								}}
-								class="ml-2 rounded bg-green-500 px-2 py-1 font-bold">SAVE</button
-							>
 						</div>
+						<div class="mb-2">Peer's Usage</div>
+						<div class="mb-4 flex w-full items-center">
+							<input
+								type="text"
+								bind:value={newExpiry}
+								class="w-full rounded-l px-2 py-1 text-black outline-none"
+							/>
+							<div class="rounded-r bg-white px-2 py-1 text-black">GB</div>
+						</div>
+						<button
+							on:click={async () => {
+								if (currentPeer)
+									await updatePeer(
+										currentPeer.name,
+										newName !== currentPeer.name ? newName : undefined,
+										Math.trunc(Date.now() / 1000 + Number(newExpiry) * 3600 * 24) !==
+											currentPeer.expiresAt
+											? Math.trunc(Date.now() / 1000 + Number(newExpiry) * 3600 * 24)
+											: undefined,
+										Number(newAllowedUsage) * 1024000000 !== currentPeer.allowedUsage
+											? Number(newAllowedUsage) * 1024000000
+											: undefined
+									);
+								editingCurrentPeer = false;
+							}}
+							class="ml-auto rounded bg-green-500 px-2 py-1 font-bold">SAVE</button
+						>
 					{:else}
 						<div class="mb-2">
 							<div class="font-bold">Address:</div>
@@ -336,13 +362,15 @@
 						</div>
 						<div class="mb-2">
 							<div class="font-bold">Bandwidth:</div>
-							<div class="ml-4 text-sm text-slate-300">
-								<span class="text-lg">↓</span>
-								{formatBytes(currentPeer.currentRx)}
-							</div>
-							<div class="ml-4 text-sm text-slate-300">
-								<span class="text-lg">↑</span>
-								{formatBytes(currentPeer.currentTx)}
+							<div class="">
+								<div class="ml-4 text-sm text-slate-300">
+									<span class="text-lg">↓</span>
+									{formatBytes(currentPeer.currentRx)}
+								</div>
+								<div class="ml-4 text-sm text-slate-300">
+									<span class="text-lg">↑</span>
+									{formatBytes(currentPeer.currentTx)}
+								</div>
 							</div>
 						</div>
 						<div class="mb-2">
@@ -368,7 +396,7 @@
 		>
 			<div
 				transition:fly={{ y: 200, duration: 200 }}
-				class="m-4 mb-0 h-full w-full rounded-lg bg-slate-900"
+				class="m-4 mb-0 h-full w-full overflow-y-auto rounded-lg bg-slate-900"
 			>
 				<div class="flex items-center justify-between border-b-2 border-slate-800 px-8 py-2">
 					<div class="text-2xl font-black">Crete Peer</div>
