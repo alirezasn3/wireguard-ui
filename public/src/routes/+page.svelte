@@ -275,7 +275,7 @@
 		>
 			<div
 				transition:fly={{ y: 200, duration: 200 }}
-				class="m-4 h-full w-full overflow-y-auto rounded-lg bg-slate-900"
+				class="m-4 mb-0 h-full w-full overflow-y-auto rounded-lg bg-slate-900"
 			>
 				<div class="flex items-center justify-between rounded-t-lg bg-slate-800 px-8 py-2">
 					<div class="text-2xl font-black">{currentPeer.name}</div>
@@ -296,9 +296,13 @@
 						{#if !editingCurrentPeer}
 							<button
 								on:click={() => {
-									newExpiry = Math.trunc(
-										((currentPeer?.expiresAt || 0) - Date.now() / 1000) / (3600 * 24)
-									).toString();
+									if (currentPeer) {
+										newExpiry = Math.trunc(
+											((currentPeer.expiresAt || 0) - Date.now() / 1000) / (3600 * 24)
+										).toString();
+										newAllowedUsage = Math.trunc(currentPeer.allowedUsage / 1024000000).toString();
+										newName = currentPeer.name
+									}
 									editingCurrentPeer = true;
 								}}
 								class="ml-2 rounded bg-orange-500 px-2 py-1 font-bold max-md:text-sm">EDIT</button
@@ -326,7 +330,7 @@
 						<div class="mb-4 flex w-full items-center">
 							<input
 								type="text"
-								bind:value={newExpiry}
+								bind:value={newAllowedUsage}
 								class="w-full rounded-l px-2 py-1 text-black outline-none"
 							/>
 							<div class="rounded-r bg-white px-2 py-1 text-black">GB</div>
