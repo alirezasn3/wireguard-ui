@@ -392,7 +392,7 @@
 							>
 							<button
 								on:click={async () => {
-									const config = await getConfig(currentPeer?.config || '');
+									const config = await getConfig(currentPeer?.name || '');
 									qr.toCanvas(document.getElementById('qr-canvas'), config);
 								}}
 								class="ml-2 rounded bg-red-500 px-2 py-1 font-bold max-md:text-sm">QRCODE</button
