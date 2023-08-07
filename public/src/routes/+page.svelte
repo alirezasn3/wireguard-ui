@@ -95,7 +95,8 @@
 			});
 			if (res.status === 201) {
 				const data = await res.json();
-				currentPeer = data;
+				showCreatPeer = false;
+				setTimeout(() => (currentPeer = data), 200);
 			} else if (res.status === 400) {
 				const { error } = await res.json();
 				createPeerError = error;
