@@ -230,14 +230,17 @@ func updatePeers() {
 	for _, p := range peerLines {
 		info := strings.Split(p, "\t")
 
+		fmt.Println(info)
+
 		// find public key
 		publicKey = info[0]
+		fmt.Println(publicKey)
 
 		if config.Peers[publicKey] == nil {
 			continue
 		}
 
-		fmt.Println(config.Peers[publicKey].Name, config.Peers[publicKey].Address)
+		fmt.Println(config.Peers[publicKey].Name, config.Peers[publicKey].Address, config.Peers[publicKey].PrivateKey)
 
 		// update current rx and tx
 		newTotalTx, _ = strconv.ParseUint(string(info[5]), 10, 64)
