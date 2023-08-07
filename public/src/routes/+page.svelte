@@ -430,12 +430,12 @@
 						<input type="text" bind:value={newName} class="w-full rounded px-2 py-1 text-black" />
 					</div>
 					<div class="mb-4 flex items-center">
-						<label for="isAdmin">Is Admin</label>
 						<input bind:value={newIsAdmin} type="checkbox" name="isAdmin" id="isAdmin" />
+						<label for="isAdmin" class="ml-1">Is Admin</label>
 					</div>
 					<button
 						on:click={async () => {
-							if (currentPeer) await createPeer(currentPeer.name, newIsAdmin);
+							await createPeer(newName, newIsAdmin);
 							if (createPeerError === '') {
 								showCreatPeer = false;
 							}
