@@ -300,11 +300,14 @@
 				</div>
 				<div class="flex flex-col p-4">
 					{#if editingCurrentPeer}
-						<div class="mb-8 mt-2 hover:cursor-pointer">
+						<button
+							on:click={() => (editingCurrentPeer = false)}
+							class="mb-8 mt-2 hover:cursor-pointer"
+						>
 							<span class="absolute h-1 w-4 origin-left -rotate-45 rounded bg-white" />
 							<span class="absolute h-1 w-6 rounded bg-white" />
-							<span class="absolute h-1 w-4 origin-left rotate-45 rounded white" />
-						</div>
+							<span class="absolute h-1 w-4 origin-left rotate-45 rounded bg-white" />
+						</button>
 						<div class="mb-2">Peer's Name</div>
 						<div class="mb-4 w-full">
 							<input type="text" bind:value={newName} class="w-full rounded px-2 py-1 text-black" />
