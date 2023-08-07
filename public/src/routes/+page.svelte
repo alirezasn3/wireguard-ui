@@ -87,7 +87,7 @@
 		return `${totalTeras < 10 ? '0' : ''}${totalTeras.toFixed(2)} TB`;
 	}
 
-	async function createPeer(name: string, isAdmin = false) {
+	async function createPeer(name: string, isAdmin: boolean = false) {
 		try {
 			const res = await fetch('/api/peers/' + name, {
 				method: 'POST',
@@ -430,7 +430,7 @@
 						<input type="text" bind:value={newName} class="w-full rounded px-2 py-1 text-black" />
 					</div>
 					<div class="mb-4 flex items-center">
-						<input bind:value={newIsAdmin} type="checkbox" name="isAdmin" id="isAdmin" />
+						<input bind:checked={newIsAdmin} type="checkbox" name="isAdmin" id="isAdmin" />
 						<label for="isAdmin" class="ml-1">Is Admin</label>
 					</div>
 					<button
