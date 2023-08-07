@@ -482,42 +482,49 @@ func main() {
 		data["name"] = peer.Name
 		c.JSON(200, data)
 	})
-	r.POST("/api/peers", func(c *gin.Context) {
+	r.PATCH("/api/peers/:name", func(c *gin.Context) {
 		ra := c.Request.Header.Get("X-Real-IP")
 		if ra == "" {
 			ra = c.Request.RemoteAddr
 		}
-		peer := findPeerByIp(strings.Split(ra, ":")[0])
-		if !peer.IsAdmin {
+		client := findPeerByIp(strings.Split(ra, ":")[0])
+		if client == nil || !client.IsAdmin {
 			c.AbortWithStatus(403)
 			return
 		}
-		p := Peer{}
-		err := c.BindJSON(&p)
+		peer := findPeerByName(c.Param("name"))
+		if peer == nil {
+			c.AbortWithStatus(400)
+			return
+		}
+		newPeer := &Peer{}
+		err := c.BindJSON(&newPeer)
 		if err != nil {
 			fmt.Println(err)
 			c.AbortWithStatus(400)
 			return
 		}
-		if p.Name != "" && p.Name != config.Peers[p.PublicKey].Name {
-			cmd := exec.Command("sh", "/root/wg-stats/scripts/replace-string.sh", "/etc/wireguard/wg0.conf", config.Peers[p.PublicKey].Name, p.Name)
-			_, err := cmd.Output()
-			if err != nil {
-				fmt.Println(err)
-				c.AbortWithStatus(400)
-				return
-			}
-			c.AbortWithStatus(200)
-		} else {
-			config.Peers[p.PublicKey].ExpiresAt = p.ExpiresAt
-			_, err = config.Collection.UpdateOne(context.TODO(), bson.M{"publicKey": p.PublicKey}, bson.M{"$set": bson.M{"expiresAt": p.ExpiresAt}})
-			if err != nil {
-				fmt.Println(err)
-				c.AbortWithStatus(400)
-				return
-			}
-			c.AbortWithStatus(200)
+		if newPeer.ExpiresAt != 0 {
+			peer.ExpiresAt = newPeer.ExpiresAt
 		}
+		if newPeer.Name != "" {
+			peer.Name = newPeer.Name
+		}
+		if newPeer.AllowedUsage != 0 {
+			diff := newPeer.AllowedUsage - peer.AllowedUsage
+			peer.AllowedUsage += diff
+			peer.RemainingUsage += diff
+		}
+		_, err = config.Collection.UpdateOne(
+			context.TODO(),
+			bson.M{"publicKey": peer.PublicKey},
+			bson.M{"$set": bson.M{"expiresAt": peer.ExpiresAt, "name": peer.Name, "allowedUsage": peer.AllowedUsage, "remainingUsage": peer.RemainingUsage}})
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(400)
+			return
+		}
+		c.AbortWithStatus(200)
 	})
 	r.GET("/api/peers/:name", func(c *gin.Context) {
 		name := c.Param("name")

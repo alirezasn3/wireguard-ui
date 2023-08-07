@@ -112,7 +112,7 @@
 		try {
 			const res = await fetch('/api/peers/' + name, {
 				method: 'Patch',
-				body: JSON.stringify({ newName, newExpiry, newAllowedUsage })
+				body: JSON.stringify({ name: newName, expiresAt: newExpiry, allowedUsage: newAllowedUsage })
 			});
 			if (res.status === 200) {
 				const data = await res.json();
