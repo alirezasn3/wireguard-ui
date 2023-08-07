@@ -96,6 +96,11 @@
 			if (res.status === 200) {
 				const data = await res.json();
 				currentPeer = data;
+			} else if (res.status === 400) {
+				const { error } = await res.json();
+				createPeerError = error;
+			} else {
+				createPeerError = res.status.toString();
 			}
 		} catch (error) {
 			console.log(error);
