@@ -111,7 +111,7 @@
 	) {
 		try {
 			const res = await fetch('/api/peers/' + name, {
-				method: 'Patch',
+				method: 'PATCH',
 				body: JSON.stringify({ name: newName, expiresAt: newExpiry, allowedUsage: newAllowedUsage })
 			});
 			if (res.status === 200) {
@@ -301,7 +301,7 @@
 											((currentPeer.expiresAt || 0) - Date.now() / 1000) / (3600 * 24)
 										).toString();
 										newAllowedUsage = Math.trunc(currentPeer.allowedUsage / 1024000000).toString();
-										newName = currentPeer.name
+										newName = currentPeer.name;
 									}
 									editingCurrentPeer = true;
 								}}
