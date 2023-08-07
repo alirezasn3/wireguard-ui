@@ -404,10 +404,8 @@ func init() {
 		}
 		fmt.Println("Created new peer in /root/configs/Admin-0.conf\nUse it to connect Wireguard UI admin panel.")
 	}
-	for _, p := range data {
-		config.Peers[p.PublicKey] = &p
-		fmt.Println(p.Name)
-		fmt.Println(p.Address)
+	for i, p := range data {
+		config.Peers[p.PublicKey] = &data[i]
 	}
 }
 
