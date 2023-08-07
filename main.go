@@ -45,7 +45,7 @@ type Peer struct {
 	PrivateKey         string             `bson:"privatekey" json:"privatekey"`
 	PublicKey          string             `bson:"publicKey" json:"publicKey"`
 	PresharedKey       string             `bson:"presharedKey" json:"presharedKey"`
-	Address            string             `bson:"Address" json:"Address"`
+	Address            string             `bson:"address" json:"address"`
 	ExpiresAt          uint64             `bson:"expiresAt" json:"expiresAt"`
 	LatestHandshake    uint64             `bson:"-" json:"latestHandshake"`
 	TotalRx            uint64             `bson:"-" json:"-"`

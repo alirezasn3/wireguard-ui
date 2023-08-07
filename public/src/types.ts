@@ -9,13 +9,13 @@ export interface DashboardInfo {
 
 export interface Peer {
 	name: string;
-	totalRx: number;
-	totalTx: number;
 	latestHandshake: number;
-	allowedIps: string;
+	address: string;
 	expiresAt: number;
 	currentRx: number;
 	currentTx: number;
+	allowedUsage: number;
+	remainingUsage: number;
 	presharedKey: string;
 	publicKey: string;
 }
