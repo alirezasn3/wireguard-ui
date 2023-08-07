@@ -298,11 +298,11 @@
 						<span class="absolute h-1 w-8 -rotate-45 rounded bg-white" />
 					</button>
 				</div>
-				<div class="flex flex-col justify-start p-4">
+				<div class="flex flex-col p-4">
 					{#if editingCurrentPeer}
 						<button
 							on:click={() => (editingCurrentPeer = false)}
-							class="relative mb-8 mt-2 hover:cursor-pointer"
+							class="relative mb-8 mt-2 w-fit hover:cursor-pointer"
 						>
 							<span class="absolute h-1 w-4 origin-left -rotate-45 rounded bg-white" />
 							<span class="absolute h-1 w-6 -translate-x-0.5 rounded bg-white" />
