@@ -107,6 +107,7 @@
 			console.log(error);
 			createPeerError = (error as Error).message;
 		}
+		newIsAdmin = false;
 	}
 
 	async function updatePeer(
@@ -298,26 +299,6 @@
 					</button>
 				</div>
 				<div class="flex flex-col p-4">
-					<div class="mb-4 flex justify-end border-b-2 border-slate-700 pb-4">
-						{#if !editingCurrentPeer}
-							<button
-								on:click={() => {
-									if (currentPeer) {
-										newExpiry = Math.trunc(
-											((currentPeer.expiresAt || 0) - Date.now() / 1000) / (3600 * 24)
-										).toString();
-										newAllowedUsage = Math.trunc(currentPeer.allowedUsage / 1024000000).toString();
-										newName = currentPeer.name;
-									}
-									editingCurrentPeer = true;
-								}}
-								class="ml-2 rounded bg-orange-500 px-2 py-1 font-bold max-md:text-sm">EDIT</button
-							>
-						{/if}
-						<button class="ml-2 rounded bg-red-500 px-2 py-1 font-bold max-md:text-sm"
-							>DELETE</button
-						>
-					</div>
 					{#if editingCurrentPeer}
 						<div class="mb-2">Peer's Name</div>
 						<div class="mb-4 w-full">
@@ -365,6 +346,25 @@
 							<div class="text-bold text-red-500">{updatePeerError}</div>
 						{/if}
 					{:else}
+						<div class="flex justify-end border-slate-700">
+							<button
+								on:click={() => {
+									if (currentPeer) {
+										newExpiry = (
+											((currentPeer.expiresAt || 0) - Date.now() / 1000) /
+											(3600 * 24)
+										).toString();
+										newAllowedUsage = Math.trunc(currentPeer.allowedUsage / 1024000000).toString();
+										newName = currentPeer.name;
+									}
+									editingCurrentPeer = true;
+								}}
+								class="ml-2 rounded bg-orange-500 px-2 py-1 font-bold max-md:text-sm">EDIT</button
+							>
+							<button class="ml-2 rounded bg-red-500 px-2 py-1 font-bold max-md:text-sm"
+								>DELETE</button
+							>
+						</div>
 						<div class="mb-2">
 							<div class="font-bold">Address:</div>
 							<div class="ml-4 text-sm text-slate-300">{currentPeer.address}</div>
@@ -418,6 +418,7 @@
 					<button
 						on:click={() => {
 							showCreatPeer = false;
+							newIsAdmin = false;
 							document.body.style.overflowY = 'auto';
 						}}
 						class="relative h-12 w-12 rounded-2xl hover:cursor-pointer"
