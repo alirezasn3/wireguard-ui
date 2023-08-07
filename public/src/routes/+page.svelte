@@ -169,7 +169,7 @@
 
 	{#if peers.length}
 		{#if view === 'peers'}
-			<div class="md:m-4">
+			<div class="overflow-y-auto md:m-4">
 				<table class="w-full table-auto bg-slate-900 text-left max-md:text-xs md:rounded-lg">
 					<thead class="border-b-2 border-slate-800">
 						<tr class="select-none">
@@ -282,9 +282,9 @@
 		>
 			<div
 				transition:fly={{ y: 200, duration: 200 }}
-				class="m-4 mb-0 h-full w-full rounded-lg bg-slate-900"
+				class="m-4 mb-0 h-full w-full overflow-y-auto rounded-lg bg-slate-900"
 			>
-				<div class="flex items-center overflow-y-auto justify-between rounded-t-lg bg-slate-800 px-8 py-2">
+				<div class="flex items-center justify-between rounded-t-lg bg-slate-800 px-8 py-2">
 					<div class="text-2xl font-black">{currentPeer.name}</div>
 					<button
 						on:click={() => {
@@ -305,7 +305,7 @@
 							class="relative mb-8 mt-2 hover:cursor-pointer"
 						>
 							<span class="absolute h-1 w-4 origin-left -rotate-45 rounded bg-white" />
-							<span class="absolute h-1 w-6 -translate-x-1 rounded bg-white" />
+							<span class="absolute h-1 w-6 -translate-x-0.5 rounded bg-white" />
 							<span class="absolute h-1 w-4 origin-left rotate-45 rounded bg-white" />
 						</button>
 						<div class="mb-2">Peer's Name</div>
@@ -418,9 +418,9 @@
 		>
 			<div
 				transition:fly={{ y: 200, duration: 200 }}
-				class="m-4 mb-0 h-full w-full rounded-lg bg-slate-900"
+				class="m-4 mb-0 h-full w-full overflow-y-auto rounded-lg bg-slate-900"
 			>
-				<div class="flex items-center justify-between overflow-y-auto border-b-2 border-slate-800 px-8 py-2">
+				<div class="flex items-center justify-between border-b-2 border-slate-800 px-8 py-2">
 					<div class="text-2xl font-black">Crete Peer</div>
 					<button
 						on:click={() => {
