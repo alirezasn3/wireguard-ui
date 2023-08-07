@@ -93,11 +93,9 @@
 				method: 'POST',
 				body: JSON.stringify({ isAdmin })
 			});
-			if (res.status === 201) {
+			if (res.status === 200) {
 				const data = await res.json();
-				setTimeout(() => {
-					currentPeer = data;
-				}, 400);
+				currentPeer = data;
 			}
 		} catch (error) {
 			console.log(error);
