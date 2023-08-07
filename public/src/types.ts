@@ -18,4 +18,5 @@ export interface Peer {
 	remainingUsage: number;
 	presharedKey: string;
 	publicKey: string;
+	config: string;
 }

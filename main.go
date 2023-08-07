@@ -57,6 +57,7 @@ type Peer struct {
 	RemainingUsage     uint64             `bson:"remainingUsage" json:"remainingUsage"`
 	UsageBytesToDeduct uint64             `bson:"-" json:"-"`
 	IsAdmin            bool               `bson:"isAdmin" json:"isAdmin"`
+	Config             string             `bson:"-" json:"-"`
 }
 
 type IPAddress struct {
@@ -162,6 +163,7 @@ func createPeer(name string, isAdmin bool) (*Peer, error) {
 		AllowedUsage:   50000000 * 1024,
 		IsAdmin:        isAdmin,
 	}
+	config.Peers[clientPublicKey].Config = generateConfig(config.Peers[clientPublicKey])
 
 	// update config file
 	f, err := os.OpenFile(fmt.Sprintf("/etc/wireguard/%s.conf", config.InterfaceName), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
@@ -352,6 +354,10 @@ func findPeerByName(name string) *Peer {
 	return nil
 }
 
+func generateConfig(peer *Peer) string {
+	return fmt.Sprintf("[Interface]\nPrivateKey = %s\nAddress = %s\nDNS = 1.1.1.1\nMTU = 1384\n[Peer]\nPublicKey = %s\nPresharedKey = %s\nAllowedIPs = 0.0.0.0/0\nEndpoint = %s\n", peer.PrivateKey, peer.Address, config.ServerPublicKey, peer.PresharedKey, config.ServerEndpoint)
+}
+
 func init() {
 	configPath := "config.json"
 	if len(os.Args) > 1 {
@@ -392,7 +398,7 @@ func init() {
 		if err != nil {
 			panic(err)
 		}
-		config := fmt.Sprintf("[Interface]\nPrivateKey = %s\nAddress = %s\nDNS = 1.1.1.1\nMTU = 1384\n[Peer]\nPublicKey = %s\nPresharedKey = %s\nAllowedIPs = 0.0.0.0/0\nEndpoint = %s\n", p.PrivateKey, p.Address, config.ServerPublicKey, p.PresharedKey, config.ServerEndpoint)
+		config := generateConfig(p)
 		err = os.WriteFile("/root/configs/Admin-0.conf", []byte(config), 0644)
 		if err != nil {
 			panic(err)
@@ -400,6 +406,7 @@ func init() {
 		fmt.Println("Created new peer in /root/configs/Admin-0.conf\nUse it to connect Wireguard UI admin panel.")
 	}
 	for i, p := range data {
+		data[i].Config = generateConfig(&data[i])
 		config.Peers[p.PublicKey] = &data[i]
 	}
 }

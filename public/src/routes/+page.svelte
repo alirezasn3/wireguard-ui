@@ -45,21 +45,31 @@
 	}
 
 	setInterval(async () => {
-		const res = await fetch(
-			import.meta.env.MODE === 'development' ? 'http://my.stats:5051/api/stats' : '/api/stats'
-		);
-		if (res.status === 200) {
-			const data = await res.json();
-			peers = Object.values(data.peers as Peer[]);
-			if (currentPeer) currentPeer = data.peers[currentPeer.publicKey];
-			dashboardInfo = {
-				name: data.name,
-				isAdmin: data.isAdmin,
-				totalRx: data.totalRx,
-				totalTx: data.totalTx,
-				currentRx: data.currentRx,
-				currentTx: data.currentTx
-			};
+		if (currentPeer) {
+			const res = await fetch(
+				import.meta.env.MODE === 'development'
+					? 'http://my.stats:5051/api/peers/' + currentPeer.name
+					: '/api/peers/' + currentPeer.name
+			);
+			if (res.status === 200) {
+				currentPeer = await res.json();
+			}
+		} else {
+			const res = await fetch(
+				import.meta.env.MODE === 'development' ? 'http://my.stats:5051/api/stats' : '/api/stats'
+			);
+			if (res.status === 200) {
+				const data = await res.json();
+				peers = Object.values(data.peers as Peer[]);
+				dashboardInfo = {
+					name: data.name,
+					isAdmin: data.isAdmin,
+					totalRx: data.totalRx,
+					totalTx: data.totalTx,
+					currentRx: data.currentRx,
+					currentTx: data.currentTx
+				};
+			}
 		}
 	}, 1000);
 
@@ -232,9 +242,7 @@
 								on:click={() => {
 									currentPeer = peer;
 									document.body.style.overflowY = 'hidden';
-									setTimeout(() => {
-										qr.toCanvas(document.getElementById('qr-canvas'), 'test');
-									}, 1000);
+									qr.toCanvas(document.getElementById('qr-canvas'), peer.config);
 								}}
 								class="{Math.trunc(peer.expiresAt - Date.now() / 1000) < 0 &&
 									'text-red-500'} hover:bg-slate-800"
