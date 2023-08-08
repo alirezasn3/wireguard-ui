@@ -121,7 +121,7 @@
 		try {
 			const res = await fetch('/api/peers/' + name, { method: 'DELETE' });
 			if (res.status === 200) {
-				showCreatPeer = false;
+				currentPeer = null;
 				editingCurrentPeer = false;
 			} else {
 				deletePeerError = res.status.toString();
