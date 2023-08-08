@@ -123,7 +123,7 @@
 			const res = await fetch('/api/peers/' + name, { method: 'DELETE' });
 			if (res.status === 200) {
 				currentPeer = null;
-				showQR = true;
+				showQR = false;
 				editingCurrentPeer = false;
 			} else {
 				deletePeerError = res.status.toString();
@@ -148,7 +148,7 @@
 			if (res.status === 200) {
 				editingCurrentPeer = false;
 				currentPeer = null;
-				showQR = true;
+				showQR = false;
 			} else updatePeerError = res.status.toString();
 		} catch (error) {
 			console.log(error);
@@ -325,7 +325,7 @@
 					<button
 						on:click={() => {
 							currentPeer = null;
-							showQR = true;
+							showQR = false;
 							editingCurrentPeer = false;
 							document.body.style.overflowY = 'auto';
 						}}
@@ -454,7 +454,7 @@
 							<div class="font-bold">Expiry:</div>
 							<div class="ml-4 text-sm text-slate-300">{formatSeconds(currentPeer.expiresAt)}</div>
 						</div>
-						<canvas class="transition-all {showQR ? 'max-h-fit' : 'max-h-0'}" id="qr-canvas" />
+						<canvas class="{showQR ? 'max-h-fit' : 'max-h-0'}" id="qr-canvas" />
 					{/if}
 				</div>
 			</div>
