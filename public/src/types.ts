@@ -15,7 +15,7 @@ export interface Peer {
 	currentRx: number;
 	currentTx: number;
 	allowedUsage: number;
-	remainingUsage: number;
+	totalUsage: number;
 	presharedKey: string;
 	publicKey: string;
 }

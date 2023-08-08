@@ -5,10 +5,10 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-PIDFile=/run/wg-stats-api.pid
-ExecStart=/root/wg-stats/wg-stats /root/wg-stats/
+PIDFile=/run/wireguard-ui.pid
+ExecStart=/root/wireguard-ui/wireguard-ui /root/wireguard-ui/
 Restart=on-failure
-RestartSec=5s
+RestartSec=1s
 
 [Install]
 WantedBy=multi-user.target

@@ -33,8 +33,7 @@
 			.filter((p) => p.name.toLowerCase().includes(''))
 			.sort((a, b) => {
 				if (sortBy === 'expiry') return sortOrder * (a.expiresAt >= b.expiresAt ? -1 : 1);
-				if (sortBy === 'remainingUsage')
-					return sortOrder * (a.remainingUsage >= b.remainingUsage ? -1 : 1);
+				if (sortBy === 'usage') return sortOrder * (a.totalUsage >= b.totalUsage ? -1 : 1);
 				return sortOrder * (a.currentRx >= b.currentRx ? -1 : 1);
 			});
 		for (let i = 0; i < peers.length; i++) {
@@ -225,21 +224,17 @@
 							>
 							<th
 								on:click={() => {
-									if (sortBy == 'remainingUsage') {
+									if (sortBy == 'usage') {
 										if (sortOrder < 0) sortOrder = 1;
 										else sortOrder = -1;
 									}
-									sortBy = 'remainingUsage';
+									sortBy = 'usage';
 								}}
-								class="p-2 hover:cursor-pointer hover:underline {sortBy === 'remainingUsage' &&
+								class="p-2 hover:cursor-pointer hover:underline {sortBy === 'usage' &&
 									'bg-gray-950 font-black'}"
-								>{sortBy === 'remainingUsage' && sortOrder === 1
-									? '↑'
-									: sortBy === 'remainingUsage'
-									? '↓'
-									: ''} Remaining</th
+								>{sortBy === 'usage' && sortOrder === 1 ? '↑' : sortBy === 'usage' ? '↓' : ''} Usage</th
 							>
-							<th class="p-2">Total</th>
+							<th class="p-2">Allowed Usage</th>
 						</tr>
 					</thead>
 					<tbody
@@ -268,11 +263,13 @@
 									>
 									<span class="hidden md:block">{formatBytes(peer.currentRx)}</span></td
 								>
-								<td class="px-2 py-1 {sortBy === 'remainingUsage' && 'bg-gray-950 font-black'}"
+								<td class="px-2 py-1 {sortBy === 'usage' && 'bg-gray-950 font-black'}"
 									><span class="hidden max-md:block"
-										>{formatBytes(peer.remainingUsage).replace(' ', '')}</span
+										>{formatBytes(peer.allowedUsage - peer.totalUsage).replace(' ', '')}</span
 									>
-									<span class="hidden md:block">{formatBytes(peer.remainingUsage)}</span></td
+									<span class="hidden md:block"
+										>{formatBytes(peer.allowedUsage - peer.totalUsage)}</span
+									></td
 								>
 								<td class="px-2 py-1"
 									><span class="hidden max-md:block"
@@ -405,7 +402,7 @@
 						<div class="mb-2">
 							<div class="font-bold">Usage:</div>
 							<div class="ml-4 text-sm text-slate-300">
-								{formatBytes(currentPeer.remainingUsage)}/{formatBytes(currentPeer.allowedUsage)}
+								{formatBytes(currentPeer.totalUsage)}/{formatBytes(currentPeer.allowedUsage)}
 							</div>
 						</div>
 						<div class="mb-2">

@@ -37,26 +37,27 @@ type Config struct {
 	ServerEndpoint       string `json:"serverEndpoint"`
 	ServerPublicKey      string `json:"serverPublicKey"`
 	ServerNetworkAddress string `json:"serverNetworkAddress"`
+	Path                 string `json:"path"`
+	DNSServers           string `json:"dnsServers"`
 }
 
 type Peer struct {
-	ID                 primitive.ObjectID `bson:"_id" json:"id"`
-	Name               string             `bson:"name" json:"name"`
-	PrivateKey         string             `bson:"privatekey" json:"privatekey"`
-	PublicKey          string             `bson:"publicKey" json:"publicKey"`
-	PresharedKey       string             `bson:"presharedKey" json:"presharedKey"`
-	Address            string             `bson:"address" json:"address"`
-	ExpiresAt          uint64             `bson:"expiresAt" json:"expiresAt"`
-	LatestHandshake    uint64             `bson:"-" json:"latestHandshake"`
-	TotalRx            uint64             `bson:"-" json:"-"`
-	TotalTx            uint64             `bson:"-" json:"-"`
-	CurrentRx          uint64             `bson:"-" json:"currentRx"`
-	CurrentTx          uint64             `bson:"-" json:"currentTx"`
-	Suspended          bool               `bson:"suspended" json:"suspended"`
-	AllowedUsage       uint64             `bson:"allowedUsage" json:"allowedUsage"`
-	RemainingUsage     uint64             `bson:"remainingUsage" json:"remainingUsage"`
-	UsageBytesToDeduct uint64             `bson:"-" json:"-"`
-	IsAdmin            bool               `bson:"isAdmin" json:"isAdmin"`
+	ID              primitive.ObjectID `bson:"_id" json:"id"`
+	Name            string             `bson:"name" json:"name"`
+	PrivateKey      string             `bson:"privatekey" json:"privatekey"`
+	PublicKey       string             `bson:"publicKey" json:"publicKey"`
+	PresharedKey    string             `bson:"presharedKey" json:"presharedKey"`
+	Address         string             `bson:"address" json:"address"`
+	ExpiresAt       uint64             `bson:"expiresAt" json:"expiresAt"`
+	LatestHandshake uint64             `bson:"-" json:"latestHandshake"`
+	TotalRx         uint64             `bson:"-" json:"-"`
+	TotalTx         uint64             `bson:"-" json:"-"`
+	CurrentRx       uint64             `bson:"-" json:"currentRx"`
+	CurrentTx       uint64             `bson:"-" json:"currentTx"`
+	Suspended       bool               `bson:"suspended" json:"suspended"`
+	AllowedUsage    uint64             `bson:"allowedUsage" json:"allowedUsage"`
+	TotalUsage      uint64             `bson:"totalUsage" json:"totalUsage"`
+	IsAdmin         bool               `bson:"isAdmin" json:"isAdmin"`
 }
 
 type IPAddress struct {
@@ -151,16 +152,15 @@ func createPeer(name string, isAdmin bool) (*Peer, error) {
 
 	// add peer
 	config.Peers[clientPublicKey] = &Peer{
-		ID:             primitive.NewObjectID(),
-		Name:           name,
-		PublicKey:      clientPublicKey,
-		PrivateKey:     clientPrivateKey,
-		PresharedKey:   presharedKey,
-		Address:        a.ToString() + "/32",
-		ExpiresAt:      uint64(time.Now().Unix() + 60*60*24*30),
-		RemainingUsage: 50000000 * 1024,
-		AllowedUsage:   50000000 * 1024,
-		IsAdmin:        isAdmin,
+		ID:           primitive.NewObjectID(),
+		Name:         name,
+		PublicKey:    clientPublicKey,
+		PrivateKey:   clientPrivateKey,
+		PresharedKey: presharedKey,
+		Address:      a.ToString() + "/32",
+		ExpiresAt:    uint64(time.Now().Unix() + 60*60*24*30),
+		AllowedUsage: 50000000 * 1024,
+		IsAdmin:      isAdmin,
 	}
 
 	// update config file
@@ -182,13 +182,13 @@ func createPeer(name string, isAdmin bool) (*Peer, error) {
 		return nil, err
 	}
 	// write striped config to a file
-	err = os.WriteFile("/root/wireguard-ui/wg0.conf", configBytes, 0644)
+	err = os.WriteFile(config.Path+"/wg0.conf", configBytes, 0644)
 	if err != nil {
 		panic(err)
 	}
 
 	// save chagnes to main config file
-	cmd = exec.Command("wg", "syncconf", config.InterfaceName, fmt.Sprintf("/root/wireguard-ui/%s.conf", config.InterfaceName))
+	cmd = exec.Command("wg", "syncconf", config.InterfaceName, fmt.Sprintf("%s/%s.conf", config.Path, config.InterfaceName))
 	_, err = cmd.Output()
 	if err != nil {
 		return nil, err
@@ -202,9 +202,21 @@ func createPeer(name string, isAdmin bool) (*Peer, error) {
 	return config.Peers[clientPublicKey], nil
 }
 
-// func deletePeer(name string) {}
-
-// func renamePeer(name string, newName string) {}
+func deletePeer(name string) error {
+	peer := findPeerByName(name)
+	if peer == nil {
+		return errors.New("peer not found")
+	}
+	cmd := exec.Command(
+		"sh",
+		config.Path+"/scripts/replace-string.sh",
+		fmt.Sprintf("/etc/wireguard/%s.conf", config.InterfaceName),
+		fmt.Sprintf("\n[Peer]\nPublicKey = %s\nPresharedKey = %s\nAllowedIPs = %s\n", peer.PublicKey, peer.PresharedKey, peer.Address),
+		"\n",
+	)
+	_, err := cmd.Output()
+	return err
+}
 
 func updatePeers() {
 	// get peers info from wg
@@ -247,8 +259,8 @@ func updatePeers() {
 		config.Peers[publicKey].TotalRx = newTotalRx
 		config.Peers[publicKey].TotalTx = newTotalTx
 
-		// update the number of bytes that must be deducted from db
-		config.Peers[publicKey].UsageBytesToDeduct += config.Peers[publicKey].CurrentRx
+		// update peer's total usage
+		config.Peers[publicKey].TotalUsage += config.Peers[publicKey].CurrentRx
 
 		// update latest handshake
 		config.Peers[publicKey].LatestHandshake, _ = strconv.ParseUint(string(info[4]), 10, 64)
@@ -265,7 +277,7 @@ func updatePeers() {
 			invalid := config.Peers[publicKey].ID.Hex() + "AAAAAAAAAAAAAAAAAAA="
 
 			// replace peer's preshared key with the invalid one
-			cmd := exec.Command("sh", "/root/wg-stats/scripts/replace-string.sh", fmt.Sprintf("/etc/wireguard/%s.conf", config.InterfaceName), config.Peers[publicKey].PresharedKey, invalid, "&&", "sh", "/root/wg-stats/scripts/restart-wireguard.sh")
+			cmd := exec.Command("sh", config.Path+"/scripts/replace-string.sh", fmt.Sprintf("/etc/wireguard/%s.conf", config.InterfaceName), config.Peers[publicKey].PresharedKey, invalid)
 			_, err := cmd.Output()
 			if err != nil {
 				fmt.Println(err)
@@ -273,7 +285,7 @@ func updatePeers() {
 			}
 
 			// save chagnes to main config file
-			cmd = exec.Command("wg", "syncconf", config.InterfaceName, fmt.Sprintf("/root/wg-stats/%s.conf", config.InterfaceName))
+			cmd = exec.Command("wg", "syncconf", config.InterfaceName, fmt.Sprintf("%s/%s.conf", config.Path, config.InterfaceName))
 			_, err = cmd.Output()
 			if err != nil {
 				fmt.Println(err)
@@ -303,14 +315,14 @@ func updatePeers() {
 			}
 
 			// replace invalid preshared key with the correct one from database
-			cmd := exec.Command("sh", "/root/wg-stats/scripts/replace-string.sh", fmt.Sprintf("/etc/wireguard/%s.conf", config.InterfaceName), invalid, p.PresharedKey, "&&", "sh", "/root/wg-stats/scripts/restart-wireguard.sh")
+			cmd := exec.Command("sh", config.Path+"/scripts/replace-string.sh", fmt.Sprintf("/etc/wireguard/%s.conf", config.InterfaceName), invalid, p.PresharedKey)
 			_, err := cmd.Output()
 			if err != nil {
 				panic(err)
 			}
 
 			// save chagnes to main config file
-			cmd = exec.Command("wg", "syncconf", config.InterfaceName, fmt.Sprintf("/root/wg-stats/%s.conf", config.InterfaceName))
+			cmd = exec.Command("wg", "syncconf", config.InterfaceName, fmt.Sprintf("%s/%s.conf", config.Path, config.InterfaceName))
 			_, err = cmd.Output()
 			if err != nil {
 				panic(err)
@@ -353,7 +365,7 @@ func findPeerByName(name string) *Peer {
 }
 
 func generateConfig(peer *Peer) string {
-	return fmt.Sprintf("[Interface]\nPrivateKey = %s\nAddress = %s\nDNS = 1.1.1.1\nMTU = 1384\n[Peer]\nPublicKey = %s\nPresharedKey = %s\nAllowedIPs = 0.0.0.0/0\nEndpoint = %s\n", peer.PrivateKey, peer.Address, config.ServerPublicKey, peer.PresharedKey, config.ServerEndpoint)
+	return fmt.Sprintf("[Interface]\nPrivateKey = %s\nAddress = %s\nDNS = %s\nMTU = 1384\n[Peer]\nPublicKey = %s\nPresharedKey = %s\nAllowedIPs = 0.0.0.0/0\nEndpoint = %s\n", peer.PrivateKey, peer.Address, config.DNSServers, config.ServerPublicKey, peer.PresharedKey, config.ServerEndpoint)
 }
 
 func init() {
@@ -408,9 +420,6 @@ func init() {
 	}
 }
 
-// TODOS:
-// add Path field to config struct
-
 func main() {
 	// get peers info every second
 	go func() {
@@ -424,14 +433,11 @@ func main() {
 		for range time.NewTicker(time.Minute).C {
 			var err error
 			var p *Peer
-			var i string
-			for i, p = range config.Peers {
-				config.Peers[i].RemainingUsage -= p.UsageBytesToDeduct
-				p.UsageBytesToDeduct = 0
+			for _, p = range config.Peers {
 				_, err = config.Collection.UpdateOne(
 					context.TODO(),
 					bson.M{"publicKey": p.PublicKey},
-					bson.M{"$set": bson.M{"remainingUsage": p.RemainingUsage}})
+					bson.M{"$set": bson.M{"totalUsage": p.TotalUsage}})
 				if err != nil {
 					fmt.Println(err)
 				}
@@ -442,7 +448,7 @@ func main() {
 	gin.SetMode(gin.ReleaseMode)
 	gin.DefaultWriter = io.Discard
 	r := gin.Default()
-	r.Use(static.Serve("/", static.LocalFile("/root/wireguard-ui/public/build", false)))
+	r.Use(static.Serve("/", static.LocalFile(config.Path+"/public/build", false)))
 	r.Use(func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", "*")
 		c.Next()
@@ -510,12 +516,11 @@ func main() {
 		if newPeer.AllowedUsage != 0 {
 			diff := newPeer.AllowedUsage - peer.AllowedUsage
 			peer.AllowedUsage += diff
-			peer.RemainingUsage += diff
 		}
 		_, err = config.Collection.UpdateOne(
 			context.TODO(),
 			bson.M{"publicKey": peer.PublicKey},
-			bson.M{"$set": bson.M{"expiresAt": peer.ExpiresAt, "name": peer.Name, "allowedUsage": peer.AllowedUsage, "remainingUsage": peer.RemainingUsage}})
+			bson.M{"$set": bson.M{"expiresAt": peer.ExpiresAt, "name": peer.Name, "allowedUsage": peer.AllowedUsage}})
 		if err != nil {
 			fmt.Println(err)
 			c.AbortWithStatus(400)
@@ -532,6 +537,15 @@ func main() {
 		}
 	})
 	r.POST("/api/peers/:name", func(c *gin.Context) {
+		ra := c.Request.Header.Get("X-Real-IP")
+		if ra == "" {
+			ra = c.Request.RemoteAddr
+		}
+		client := findPeerByIp(strings.Split(ra, ":")[0])
+		if client == nil || !client.IsAdmin {
+			c.AbortWithStatus(403)
+			return
+		}
 		name := c.Param("name")
 		p := &Peer{}
 		err := c.BindJSON(&p)
@@ -547,6 +561,36 @@ func main() {
 		} else {
 			c.JSON(201, p)
 		}
+	})
+	r.DELETE("/api/peers/:name", func(c *gin.Context) {
+		ra := c.Request.Header.Get("X-Real-IP")
+		if ra == "" {
+			ra = c.Request.RemoteAddr
+		}
+		client := findPeerByIp(strings.Split(ra, ":")[0])
+		if client == nil || !client.IsAdmin {
+			c.AbortWithStatus(403)
+			return
+		}
+		err := deletePeer(c.Param("name"))
+		if err != nil {
+			if err.Error() == "peer not found" {
+				c.AbortWithStatus(400)
+			} else {
+				fmt.Println(err)
+				c.AbortWithStatus(500)
+			}
+			return
+		}
+		_, err = config.Collection.DeleteOne(
+			context.TODO(),
+			bson.M{"name": c.Param("name")})
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(500)
+			return
+		}
+		c.AbortWithStatus(200)
 	})
 	r.GET("/api/configs/:name", func(c *gin.Context) {
 		name := c.Param("name")
