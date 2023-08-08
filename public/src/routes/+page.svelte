@@ -209,8 +209,10 @@
 
 	{#if peers.length}
 		{#if view === 'peers'}
-			<div class="overflow-y-auto break-keep md:m-4">
-				<table class="w-full table-auto bg-slate-900 text-left max-md:text-xs md:rounded-lg">
+			<div class="overflow-y-auto md:m-4">
+				<table
+					class="w-full table-auto break-keep bg-slate-900 text-left max-md:text-xs md:rounded-lg"
+				>
 					<thead class="border-b-2 border-slate-800">
 						<tr class="select-none">
 							<th class="p-2">#</th>
@@ -391,7 +393,7 @@
 							<div class="text-bold text-red-500">{updatePeerError}</div>
 						{/if}
 					{:else}
-						<div class="mb-2 flex justify-end border-slate-700">
+						<div class="mb-2 flex justify-end break-keep border-slate-700 max-md:text-sm">
 							{#if dashboardInfo.isAdmin}
 								<button
 									on:click={() => {
@@ -424,7 +426,7 @@
 							<button
 								on:click={async () => {
 									const config = await getConfig(currentPeer?.name || '');
-									const file = new Blob([config || ''], { type: 'string' });
+									const file = new Blob([config || ''], { type: 'text/plain' });
 									const a = document.createElement('a');
 									a.href = URL.createObjectURL(file);
 									a.download = currentPeer?.name + '.conf';
