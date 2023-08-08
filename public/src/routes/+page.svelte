@@ -143,9 +143,11 @@
 				method: 'PATCH',
 				body: JSON.stringify({ name: newName, expiresAt: newExpiry, allowedUsage: newAllowedUsage })
 			});
-			if (res.status !== 200) {
-				updatePeerError = res.status.toString();
-			} else if (currentPeer && currentPeer.name !== name) currentPeer.name = name;
+			if (res.status === 200) {
+				editingCurrentPeer = false
+				currentPeer = null 
+			}else
+			updatePeerError = res.status.toString();
 		} catch (error) {
 			console.log(error);
 			updatePeerError = (error as Error).message;
