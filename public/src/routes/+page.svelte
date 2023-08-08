@@ -209,7 +209,7 @@
 
 	{#if peers.length}
 		{#if view === 'peers'}
-			<div class="overflow-y-auto md:m-4">
+			<div class="overflow-y-auto break-keep md:m-4">
 				<table class="w-full table-auto bg-slate-900 text-left max-md:text-xs md:rounded-lg">
 					<thead class="border-b-2 border-slate-800">
 						<tr class="select-none">
@@ -419,7 +419,19 @@
 									qr.toCanvas(document.getElementById('qr-canvas'), config);
 									showQR = true;
 								}}
-								class="ml-2 rounded bg-green-500 px-2 py-1 font-bold max-md:text-sm">QRCODE</button
+								class="ml-2 rounded bg-green-500 px-2 py-1 font-bold max-md:text-sm">QR CODE</button
+							>
+							<button
+								on:click={async () => {
+									const config = await getConfig(currentPeer?.name || '');
+									const file = new Blob([config || ''], { type: 'string' });
+									const a = document.createElement('a');
+									a.href = URL.createObjectURL(file);
+									a.download = currentPeer?.name + '.conf';
+									a.click();
+								}}
+								class="ml-2 rounded bg-green-500 px-2 py-1 font-bold max-md:text-sm"
+								>CONFIG FILE</button
 							>
 						</div>
 						{#if deletePeerError}
