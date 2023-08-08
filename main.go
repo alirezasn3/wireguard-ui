@@ -207,15 +207,19 @@ func deletePeer(name string) error {
 	if peer == nil {
 		return errors.New("peer not found")
 	}
-	cmd := exec.Command(
-		"sh",
-		config.Path+"/scripts/replace-string.sh",
-		fmt.Sprintf("/etc/wireguard/%s.conf", config.InterfaceName),
+	configBytes, err := os.ReadFile(fmt.Sprintf("/etc/wireguard/%s.conf", config.InterfaceName))
+	if err != nil {
+		return err
+	}
+
+	newConfig := strings.Replace(
+		string(configBytes),
 		fmt.Sprintf("\n[Peer]\nPublicKey = %s\nPresharedKey = %s\nAllowedIPs = %s\n", peer.PublicKey, peer.PresharedKey, peer.Address),
-		"\n",
+		"",
+		1,
 	)
-	fmt.Println(cmd)
-	_, err := cmd.Output()
+
+	err = os.WriteFile(fmt.Sprintf("/etc/wireguard/%s.conf", config.InterfaceName), []byte(newConfig), 0644)
 	return err
 }
 
