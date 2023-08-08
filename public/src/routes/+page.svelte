@@ -25,6 +25,7 @@
 	let newAllowedUsage = '';
 	let newIsAdmin = false;
 	let editingCurrentPeer = false;
+	let showQR = false
 	let createPeerError = '';
 	let updatePeerError = '';
 	let deletePeerError = '';
@@ -122,6 +123,7 @@
 			const res = await fetch('/api/peers/' + name, { method: 'DELETE' });
 			if (res.status === 200) {
 				currentPeer = null;
+				showQR = true
 				editingCurrentPeer = false;
 			} else {
 				deletePeerError = res.status.toString();
@@ -144,10 +146,10 @@
 				body: JSON.stringify({ name: newName, expiresAt: newExpiry, allowedUsage: newAllowedUsage })
 			});
 			if (res.status === 200) {
-				editingCurrentPeer = false
-				currentPeer = null 
-			}else
-			updatePeerError = res.status.toString();
+				editingCurrentPeer = false;
+				currentPeer = null;
+				showQR = true
+			} else updatePeerError = res.status.toString();
 		} catch (error) {
 			console.log(error);
 			updatePeerError = (error as Error).message;
@@ -323,6 +325,7 @@
 					<button
 						on:click={() => {
 							currentPeer = null;
+							showQR = true
 							editingCurrentPeer = false;
 							document.body.style.overflowY = 'auto';
 						}}
@@ -410,6 +413,7 @@
 								on:click={async () => {
 									const config = await getConfig(currentPeer?.name || '');
 									qr.toCanvas(document.getElementById('qr-canvas'), config);
+									showQR = true
 								}}
 								class="ml-2 rounded bg-red-500 px-2 py-1 font-bold max-md:text-sm">QRCODE</button
 							>
