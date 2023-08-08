@@ -25,7 +25,7 @@
 	let newAllowedUsage = '';
 	let newIsAdmin = false;
 	let editingCurrentPeer = false;
-	let showQR = false
+	let showQR = false;
 	let createPeerError = '';
 	let updatePeerError = '';
 	let deletePeerError = '';
@@ -123,7 +123,7 @@
 			const res = await fetch('/api/peers/' + name, { method: 'DELETE' });
 			if (res.status === 200) {
 				currentPeer = null;
-				showQR = true
+				showQR = true;
 				editingCurrentPeer = false;
 			} else {
 				deletePeerError = res.status.toString();
@@ -148,7 +148,7 @@
 			if (res.status === 200) {
 				editingCurrentPeer = false;
 				currentPeer = null;
-				showQR = true
+				showQR = true;
 			} else updatePeerError = res.status.toString();
 		} catch (error) {
 			console.log(error);
@@ -325,7 +325,7 @@
 					<button
 						on:click={() => {
 							currentPeer = null;
-							showQR = true
+							showQR = true;
 							editingCurrentPeer = false;
 							document.body.style.overflowY = 'auto';
 						}}
@@ -413,7 +413,7 @@
 								on:click={async () => {
 									const config = await getConfig(currentPeer?.name || '');
 									qr.toCanvas(document.getElementById('qr-canvas'), config);
-									showQR = true
+									showQR = true;
 								}}
 								class="ml-2 rounded bg-red-500 px-2 py-1 font-bold max-md:text-sm">QRCODE</button
 							>
@@ -454,7 +454,7 @@
 							<div class="font-bold">Expiry:</div>
 							<div class="ml-4 text-sm text-slate-300">{formatSeconds(currentPeer.expiresAt)}</div>
 						</div>
-						<canvas id="qr-canvas" />
+						<canvas class="transition-all {showQR ? 'max-h-fit' : 'max-h-0'}" id="qr-canvas" />
 					{/if}
 				</div>
 			</div>
