@@ -27,6 +27,7 @@
 	let editingCurrentPeer = false;
 	let createPeerError = '';
 	let updatePeerError = '';
+	let deletePeerError = '';
 
 	$: {
 		peers = peers
@@ -114,6 +115,21 @@
 			createPeerError = (error as Error).message;
 		}
 		newIsAdmin = false;
+	}
+
+	async function deletePeer(name: string) {
+		try {
+			const res = await fetch('/api/peers/' + name, { method: 'DELETE' });
+			if (res.status === 200) {
+				showCreatPeer = false;
+				editingCurrentPeer = false;
+			} else {
+				deletePeerError = res.status.toString();
+			}
+		} catch (error) {
+			console.log(error);
+			deletePeerError = (error as Error).message;
+		}
 	}
 
 	async function updatePeer(
@@ -265,11 +281,9 @@
 								>
 								<td class="px-2 py-1 {sortBy === 'usage' && 'bg-gray-950 font-black'}"
 									><span class="hidden max-md:block"
-										>{formatBytes(peer.allowedUsage - peer.totalUsage).replace(' ', '')}</span
+										>{formatBytes(peer.totalUsage).replace(' ', '')}</span
 									>
-									<span class="hidden md:block"
-										>{formatBytes(peer.allowedUsage - peer.totalUsage)}</span
-									></td
+									<span class="hidden md:block">{formatBytes(peer.totalUsage)}</span></td
 								>
 								<td class="px-2 py-1"
 									><span class="hidden max-md:block"
@@ -384,8 +398,9 @@
 								}}
 								class="ml-2 rounded bg-orange-500 px-2 py-1 font-bold max-md:text-sm">EDIT</button
 							>
-							<button class="ml-2 rounded bg-red-500 px-2 py-1 font-bold max-md:text-sm"
-								>DELETE</button
+							<button
+								on:click={() => deletePeer(currentPeer?.name || '')}
+								class="ml-2 rounded bg-red-500 px-2 py-1 font-bold max-md:text-sm">DELETE</button
 							>
 							<button
 								on:click={async () => {
