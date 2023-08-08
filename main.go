@@ -214,6 +214,7 @@ func deletePeer(name string) error {
 		fmt.Sprintf("\n[Peer]\nPublicKey = %s\nPresharedKey = %s\nAllowedIPs = %s\n", peer.PublicKey, peer.PresharedKey, peer.Address),
 		"\n",
 	)
+	fmt.Println(cmd)
 	_, err := cmd.Output()
 	return err
 }
