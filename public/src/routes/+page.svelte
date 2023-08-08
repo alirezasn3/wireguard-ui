@@ -145,8 +145,7 @@
 			});
 			if (res.status !== 200) {
 				updatePeerError = res.status.toString();
-				if (currentPeer && currentPeer.name !== name) currentPeer.name = name;
-			}
+			} else if (currentPeer && currentPeer.name !== name) currentPeer.name = name;
 		} catch (error) {
 			console.log(error);
 			updatePeerError = (error as Error).message;
