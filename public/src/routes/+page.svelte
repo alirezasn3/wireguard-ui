@@ -426,7 +426,7 @@
 							<button
 								on:click={async () => {
 									const config = await getConfig(currentPeer?.name || '');
-									const file = new Blob([config || ''], { type: 'text/plain' });
+									const file = new Blob([config || ''], { type: 'application/octet-stream' });
 									const a = document.createElement('a');
 									a.href = URL.createObjectURL(file);
 									a.download = currentPeer?.name + '.conf';
