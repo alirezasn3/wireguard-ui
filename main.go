@@ -220,6 +220,19 @@ func deletePeer(name string) error {
 	)
 
 	err = os.WriteFile(fmt.Sprintf("/etc/wireguard/%s.conf", config.InterfaceName), []byte(newConfig), 0644)
+	if err != nil {
+		return err
+	}
+
+	_, err = config.Collection.DeleteOne(
+		context.TODO(),
+		bson.M{"name": name},
+	)
+
+	if err == nil {
+		delete(config.Peers, peer.PublicKey)
+	}
+
 	return err
 }
 
@@ -585,14 +598,6 @@ func main() {
 				fmt.Println(err)
 				c.AbortWithStatus(500)
 			}
-			return
-		}
-		_, err = config.Collection.DeleteOne(
-			context.TODO(),
-			bson.M{"name": c.Param("name")})
-		if err != nil {
-			fmt.Println(err)
-			c.AbortWithStatus(500)
 			return
 		}
 		c.AbortWithStatus(200)
