@@ -143,7 +143,10 @@
 				method: 'PATCH',
 				body: JSON.stringify({ name: newName, expiresAt: newExpiry, allowedUsage: newAllowedUsage })
 			});
-			if (res.status !== 200) updatePeerError = res.status.toString();
+			if (res.status !== 200) {
+				updatePeerError = res.status.toString();
+				if (currentPeer && currentPeer.name !== name) currentPeer.name = name;
+			}
 		} catch (error) {
 			console.log(error);
 			updatePeerError = (error as Error).message;
@@ -410,6 +413,9 @@
 								class="ml-2 rounded bg-red-500 px-2 py-1 font-bold max-md:text-sm">QRCODE</button
 							>
 						</div>
+						{#if deletePeerError}
+							<div class="mb-2 text-red-500">{deletePeerError}</div>
+						{/if}
 						<div class="mb-2">
 							<div class="font-bold">Address:</div>
 							<div class="ml-4 text-sm text-slate-300">{currentPeer.address}</div>
