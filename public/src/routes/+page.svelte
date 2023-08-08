@@ -318,7 +318,7 @@
 		>
 			<div
 				transition:fly={{ y: 200, duration: 200 }}
-				class="m-4 mb-0 h-full w-full overflow-y-auto rounded-lg bg-slate-900"
+				class="m-4 mb-0 h-full w-full overflow-y-auto rounded-lg bg-slate-900 max-md:m-0"
 			>
 				<div class="flex items-center justify-between rounded-t-lg bg-slate-800 px-8 py-2">
 					<div class="text-2xl font-black">{currentPeer.name}</div>
@@ -391,31 +391,35 @@
 							<div class="text-bold text-red-500">{updatePeerError}</div>
 						{/if}
 					{:else}
-						<div class="flex justify-end border-slate-700">
-							<button
-								on:click={() => {
-									if (currentPeer) {
-										newExpiry = (((currentPeer.expiresAt || 0) - Date.now() / 1000) / (3600 * 24))
-											.toFixed(2)
-											.toString();
-										newAllowedUsage = Math.trunc(currentPeer.allowedUsage / 1024000000).toString();
-										newName = currentPeer.name;
-									}
-									editingCurrentPeer = true;
-								}}
-								class="ml-2 rounded bg-orange-500 px-2 py-1 font-bold max-md:text-sm">EDIT</button
-							>
-							<button
-								on:click={() => deletePeer(currentPeer?.name || '')}
-								class="ml-2 rounded bg-red-500 px-2 py-1 font-bold max-md:text-sm">DELETE</button
-							>
+						<div class="mb-2 flex justify-end border-slate-700">
+							{#if dashboardInfo.isAdmin}
+								<button
+									on:click={() => {
+										if (currentPeer) {
+											newExpiry = (((currentPeer.expiresAt || 0) - Date.now() / 1000) / (3600 * 24))
+												.toFixed(2)
+												.toString();
+											newAllowedUsage = Math.trunc(
+												currentPeer.allowedUsage / 1024000000
+											).toString();
+											newName = currentPeer.name;
+										}
+										editingCurrentPeer = true;
+									}}
+									class="ml-2 rounded bg-orange-500 px-2 py-1 font-bold max-md:text-sm">EDIT</button
+								>
+								<button
+									on:click={() => deletePeer(currentPeer?.name || '')}
+									class="ml-2 rounded bg-red-500 px-2 py-1 font-bold max-md:text-sm">DELETE</button
+								>
+							{/if}
 							<button
 								on:click={async () => {
 									const config = await getConfig(currentPeer?.name || '');
 									qr.toCanvas(document.getElementById('qr-canvas'), config);
 									showQR = true;
 								}}
-								class="ml-2 rounded bg-red-500 px-2 py-1 font-bold max-md:text-sm">QRCODE</button
+								class="ml-2 rounded bg-green-500 px-2 py-1 font-bold max-md:text-sm">QRCODE</button
 							>
 						</div>
 						{#if deletePeerError}
@@ -454,7 +458,7 @@
 							<div class="font-bold">Expiry:</div>
 							<div class="ml-4 text-sm text-slate-300">{formatSeconds(currentPeer.expiresAt)}</div>
 						</div>
-						<canvas class="{showQR ? 'max-h-fit' : 'max-h-0'}" id="qr-canvas" />
+						<canvas class="w-full {showQR ? 'max-h-fit' : 'max-h-0'}" id="qr-canvas" />
 					{/if}
 				</div>
 			</div>
@@ -468,7 +472,7 @@
 		>
 			<div
 				transition:fly={{ y: 200, duration: 200 }}
-				class="m-4 mb-0 h-full w-full overflow-y-auto rounded-lg bg-slate-900"
+				class="m-4 mb-0 h-full w-full overflow-y-auto rounded-lg bg-slate-900 max-md:m-0"
 			>
 				<div class="flex items-center justify-between border-b-2 border-slate-800 px-8 py-2">
 					<div class="text-2xl font-black">Crete Peer</div>
