@@ -314,11 +314,11 @@
 	{#if currentPeer !== null}
 		<div
 			transition:fade={{ duration: 200 }}
-			class="fixed left-0 top-16 flex h-[calc(100vh-64px)] w-[100vw] items-center justify-center bg-slate-950 bg-opacity-95 p-4 pb-0"
+			class="fixed left-0 top-16 flex h-[calc(100vh-64px)] w-[100vw] items-center justify-center bg-slate-950 bg-opacity-95 p-4 pb-0 max-md:px-0 max-md:pt-4"
 		>
 			<div
 				transition:fly={{ y: 200, duration: 200 }}
-				class="m-4 mb-0 h-full w-full overflow-y-auto rounded-lg bg-slate-900 max-md:m-0"
+				class="h-full w-full overflow-y-auto rounded-lg bg-slate-900 max-md:pb-16"
 			>
 				<div class="flex items-center justify-between rounded-t-lg bg-slate-800 px-8 py-2">
 					<div class="text-2xl font-black">{currentPeer.name}</div>
@@ -458,7 +458,10 @@
 							<div class="font-bold">Expiry:</div>
 							<div class="ml-4 text-sm text-slate-300">{formatSeconds(currentPeer.expiresAt)}</div>
 						</div>
-						<canvas class="w-full {showQR ? 'max-h-fit' : 'max-h-0'}" id="qr-canvas" />
+						<canvas
+							class="max-md:w-[calc(100vw-64)] {showQR ? 'max-h-fit' : 'max-h-0'}"
+							id="qr-canvas"
+						/>
 					{/if}
 				</div>
 			</div>
@@ -468,11 +471,11 @@
 	{#if showCreatPeer}
 		<div
 			transition:fade={{ duration: 200 }}
-			class="fixed left-0 top-16 flex h-[calc(100vh-64px)] w-[100vw] items-center justify-center bg-slate-950 bg-opacity-95 p-4 pb-0"
+			class="fixed left-0 top-16 flex h-[calc(100vh-64px)] w-[100vw] items-center justify-center bg-slate-950 bg-opacity-95 p-4 pb-0 max-md:px-0 max-md:pt-4"
 		>
 			<div
 				transition:fly={{ y: 200, duration: 200 }}
-				class="m-4 mb-0 h-full w-full overflow-y-auto rounded-lg bg-slate-900 max-md:m-0"
+				class="h-full w-full overflow-y-auto rounded-lg bg-slate-900 max-md:pb-16"
 			>
 				<div class="flex items-center justify-between border-b-2 border-slate-800 px-8 py-2">
 					<div class="text-2xl font-black">Crete Peer</div>
