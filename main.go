@@ -533,6 +533,9 @@ func main() {
 		if newPeer.Name != "" {
 			peer.Name = newPeer.Name
 		}
+		if newPeer.TotalUsage == 0 {
+			peer.TotalUsage = 0
+		}
 		if newPeer.AllowedUsage != 0 {
 			diff := newPeer.AllowedUsage - peer.AllowedUsage
 			peer.AllowedUsage += diff
@@ -540,7 +543,7 @@ func main() {
 		_, err = config.Collection.UpdateOne(
 			context.TODO(),
 			bson.M{"publicKey": peer.PublicKey},
-			bson.M{"$set": bson.M{"expiresAt": peer.ExpiresAt, "name": peer.Name, "allowedUsage": peer.AllowedUsage}})
+			bson.M{"$set": bson.M{"expiresAt": peer.ExpiresAt, "name": peer.Name, "allowedUsage": peer.AllowedUsage, "totalUsage": peer.TotalUsage}})
 		if err != nil {
 			fmt.Println(err)
 			c.AbortWithStatus(400)
