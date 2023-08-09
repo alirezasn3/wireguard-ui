@@ -239,7 +239,8 @@
 								on:click={() => {
 									sortBy = 'name';
 								}}
-								class="min-w-40 p-2">Name</th
+								class="min-w-40 p-2 hover:cursor-pointer hover:underline {sortBy === 'name' &&
+									'bg-gray-950 font-black'}">Name</th
 							>
 							<th
 								on:click={() => {
