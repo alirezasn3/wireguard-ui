@@ -15,7 +15,7 @@
 		currentTx: 0
 	};
 	let sortBy = 'expiry';
-	let sortOrder = 1;
+	let sortOrder = -1;
 	let serch = '';
 	let currentPeer: Peer | null = null;
 	let view = 'peers';
@@ -29,6 +29,7 @@
 	let createPeerError = '';
 	let updatePeerError = '';
 	let deletePeerError = '';
+	let resetPeerUsageError = '';
 
 	$: {
 		peers = peers
@@ -36,6 +37,7 @@
 			.sort((a, b) => {
 				if (sortBy === 'expiry') return sortOrder * (a.expiresAt >= b.expiresAt ? -1 : 1);
 				if (sortBy === 'usage') return sortOrder * (a.totalUsage >= b.totalUsage ? -1 : 1);
+				if (sortBy === 'name') return a.name.localeCompare(b.name);
 				return sortOrder * (a.currentRx >= b.currentRx ? -1 : 1);
 			});
 		for (let i = 0; i < peers.length; i++) {
@@ -156,6 +158,23 @@
 		}
 	}
 
+	async function resetPeerUsage(name: string) {
+		try {
+			const res = await fetch('/api/peers/' + name, {
+				method: 'PATCH',
+				body: JSON.stringify({ totalUsage: 0 })
+			});
+			if (res.status === 200) {
+				editingCurrentPeer = false;
+				currentPeer = null;
+				showQR = false;
+			} else resetPeerUsageError = res.status.toString();
+		} catch (error) {
+			console.log(error);
+			resetPeerUsageError = (error as Error).message;
+		}
+	}
+
 	async function getConfig(name: string) {
 		try {
 			const res = await fetch('/api/configs/' + name);
@@ -216,7 +235,12 @@
 					<thead class="border-b-2 border-slate-800">
 						<tr class="select-none">
 							<th class="p-2">#</th>
-							<th class="p-2">Name</th>
+							<th
+								on:click={() => {
+									sortBy = 'name';
+								}}
+								class="min-w-40 p-2">Name</th
+							>
 							<th
 								on:click={() => {
 									if (sortBy == 'expiry') {
@@ -226,8 +250,7 @@
 									sortBy = 'expiry';
 								}}
 								class="p-2 hover:cursor-pointer hover:underline {sortBy === 'expiry' &&
-									'bg-gray-950 font-black'}"
-								>{sortBy === 'expiry' && sortOrder === 1 ? '↑' : sortBy === 'expiry' ? '↓' : ''} Expiry</th
+									'bg-gray-950 font-black'}">Expiry</th
 							>
 							<th
 								on:click={() => {
@@ -238,13 +261,7 @@
 									sortBy = 'bandwidth';
 								}}
 								class="p-2 hover:cursor-pointer hover:underline {sortBy === 'bandwidth' &&
-									'bg-gray-950 font-black'}"
-								>{sortBy === 'bandwidth' && sortOrder === 1
-									? '↑'
-									: sortBy === 'bandwidth'
-									? '↓'
-									: ''}
-								Bandwidth</th
+									'bg-gray-950 font-black'}">Bandwidth</th
 							>
 							<th
 								on:click={() => {
@@ -256,9 +273,10 @@
 								}}
 								class="p-2 hover:cursor-pointer hover:underline {sortBy === 'usage' &&
 									'bg-gray-950 font-black'}"
-								>{sortBy === 'usage' && sortOrder === 1 ? '↑' : sortBy === 'usage' ? '↓' : ''} Usage</th
 							>
-							<th class="p-2">Allowed Usage</th>
+								Usage</th
+							>
+							<th class="min-w-32 p-2">Allowed Usage</th>
 						</tr>
 					</thead>
 					<tbody
@@ -273,32 +291,19 @@
 								class="{Math.trunc(peer.expiresAt - Date.now() / 1000) < 0 &&
 									'text-red-500'} hover:bg-slate-800"
 							>
-								<td class="px-2 py-1">{i + 1}</td>
-								<td class="px-2 py-1">{peer.name}</td>
-								<td class="px-2 py-1 {sortBy === 'expiry' && 'bg-gray-950 font-black'}">
-									<span class="hidden max-md:block"
-										>{formatSeconds(peer.expiresAt).replace(' ', '')}</span
-									>
-									<span class="hidden md:block">{formatSeconds(peer.expiresAt)}</span>
+								<td class="px-2 py-1 max-md:py-2">{i + 1}</td>
+								<td class="px-2 py-1 max-md:py-2">{peer.name}</td>
+								<td class="px-2 py-1 max-md:py-2 {sortBy === 'expiry' && 'bg-gray-950 font-black'}">
+									{formatSeconds(peer.expiresAt)}
 								</td>
-								<td class="px-2 py-1 {sortBy === 'bandwidth' && 'bg-gray-950 font-black'}"
-									><span class="hidden max-md:block"
-										>{formatBytes(peer.currentRx).replace(' ', '')}</span
-									>
-									<span class="hidden md:block">{formatBytes(peer.currentRx)}</span></td
+								<td
+									class="px-2 py-1 max-md:py-2 {sortBy === 'bandwidth' && 'bg-gray-950 font-black'}"
+									>{formatBytes(peer.currentRx)}</td
 								>
-								<td class="px-2 py-1 {sortBy === 'usage' && 'bg-gray-950 font-black'}"
-									><span class="hidden max-md:block"
-										>{formatBytes(peer.totalUsage).replace(' ', '')}</span
-									>
-									<span class="hidden md:block">{formatBytes(peer.totalUsage)}</span></td
+								<td class="px-2 py-1 max-md:py-2 {sortBy === 'usage' && 'bg-gray-950 font-black'}"
+									>{formatBytes(peer.totalUsage)}</td
 								>
-								<td class="px-2 py-1"
-									><span class="hidden max-md:block"
-										>{formatBytes(peer.allowedUsage).replace(' ', '')}</span
-									>
-									<span class="hidden md:block">{formatBytes(peer.allowedUsage)}</span></td
-								>
+								<td class="px-2 py-1 max-md:py-2">{formatBytes(peer.allowedUsage)}</td>
 							</tr>
 						{/each}
 					</tbody>
@@ -408,11 +413,18 @@
 										}
 										editingCurrentPeer = true;
 									}}
-									class="ml-2 rounded bg-orange-500 px-2 py-1 font-bold max-md:text-sm">EDIT</button
+									class="ml-2 rounded bg-orange-500 px-2 py-1 font-bold max-md:text-sm"
+									><img src="/edit.png" alt="edit" /></button
 								>
 								<button
 									on:click={() => deletePeer(currentPeer?.name || '')}
-									class="ml-2 rounded bg-red-500 px-2 py-1 font-bold max-md:text-sm">DELETE</button
+									class="ml-2 rounded bg-red-500 px-2 py-1 font-bold max-md:text-sm"
+									><img src="/delete.png" alt="delete" /></button
+								>
+								<button
+									on:click={() => resetPeerUsage(currentPeer?.name || '')}
+									class="ml-2 rounded bg-orange-500 px-2 py-1 font-bold max-md:text-sm"
+									><img src="/reset.png" alt="reset" /></button
 								>
 							{/if}
 							<button
@@ -421,7 +433,8 @@
 									qr.toCanvas(document.getElementById('qr-canvas'), config);
 									showQR = true;
 								}}
-								class="ml-2 rounded bg-green-500 px-2 py-1 font-bold max-md:text-sm">QR CODE</button
+								class="ml-2 rounded bg-green-500 px-2 py-1 font-bold max-md:text-sm"
+								><img src="/qr.png" alt="qrcode" /></button
 							>
 							<button
 								on:click={async () => {
@@ -433,11 +446,14 @@
 									a.click();
 								}}
 								class="ml-2 rounded bg-green-500 px-2 py-1 font-bold max-md:text-sm"
-								>CONFIG FILE</button
+								><img src="download.png" alt="download" /></button
 							>
 						</div>
 						{#if deletePeerError}
 							<div class="mb-2 text-red-500">{deletePeerError}</div>
+						{/if}
+						{#if resetPeerUsageError}
+							<div class="mb-2 text-red-500">{resetPeerUsageError}</div>
 						{/if}
 						<div class="mb-2">
 							<div class="font-bold">Address:</div>

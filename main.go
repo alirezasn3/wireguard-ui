@@ -159,7 +159,7 @@ func createPeer(name string, isAdmin bool) (*Peer, error) {
 		PresharedKey: presharedKey,
 		Address:      a.ToString() + "/32",
 		ExpiresAt:    uint64(time.Now().Unix() + 60*60*24*30),
-		AllowedUsage: 50000000 * 1024,
+		AllowedUsage: 100000000 * 1024,
 		IsAdmin:      isAdmin,
 	}
 
@@ -290,7 +290,8 @@ func updatePeers() {
 		currentTx += config.Peers[publicKey].CurrentTx
 
 		// suspend expired peers
-		if config.Peers[publicKey].ExpiresAt < uint64(time.Now().Unix()) && !config.Peers[publicKey].Suspended {
+		if (config.Peers[publicKey].ExpiresAt < uint64(time.Now().Unix()) && !config.Peers[publicKey].Suspended) ||
+			(config.Peers[publicKey].TotalUsage > config.Peers[publicKey].AllowedUsage && !config.Peers[publicKey].Suspended) {
 			// create invalid preshared key
 			invalid := config.Peers[publicKey].ID.Hex() + "AAAAAAAAAAAAAAAAAAA="
 
@@ -320,7 +321,8 @@ func updatePeers() {
 		}
 
 		// revive suspended peers
-		if config.Peers[publicKey].Suspended && config.Peers[publicKey].ExpiresAt > uint64(time.Now().Unix()) {
+		if (config.Peers[publicKey].Suspended && config.Peers[publicKey].ExpiresAt > uint64(time.Now().Unix())) ||
+			(config.Peers[publicKey].Suspended && config.Peers[publicKey].TotalUsage < config.Peers[publicKey].AllowedUsage) {
 			// create invalid preshared key
 			invalid := config.Peers[publicKey].ID.Hex() + "AAAAAAAAAAAAAAAAAAA="
 
