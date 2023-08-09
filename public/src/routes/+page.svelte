@@ -48,9 +48,11 @@
 	}
 
 	setInterval(async () => {
+		if (editingCurrentPeer || showCreatPeer) return;
 		if (currentPeer) {
 			const res = await fetch('/api/peers/' + currentPeer.name);
 			if (res.status === 200) {
+				if (!currentPeer) return;
 				currentPeer = await res.json();
 			}
 		} else {
@@ -127,6 +129,7 @@
 				currentPeer = null;
 				showQR = false;
 				editingCurrentPeer = false;
+				document.body.style.overflowY = 'auto';
 			} else {
 				deletePeerError = res.status.toString();
 			}
@@ -151,6 +154,7 @@
 				editingCurrentPeer = false;
 				currentPeer = null;
 				showQR = false;
+				document.body.style.overflowY = 'auto';
 			} else updatePeerError = res.status.toString();
 		} catch (error) {
 			console.log(error);
@@ -168,6 +172,7 @@
 				editingCurrentPeer = false;
 				currentPeer = null;
 				showQR = false;
+				document.body.style.overflowY = 'auto';
 			} else resetPeerUsageError = res.status.toString();
 		} catch (error) {
 			console.log(error);
@@ -391,9 +396,6 @@
 											? Number(newAllowedUsage) * 1024000000
 											: undefined
 									);
-								if (updatePeerError === '') {
-									editingCurrentPeer = false;
-								}
 							}}
 							class="mb-4 ml-auto rounded bg-green-500 px-2 py-1 font-bold">SAVE</button
 						>
@@ -445,7 +447,7 @@
 									const file = new Blob([config || ''], { type: 'application/octet-stream' });
 									const a = document.createElement('a');
 									a.href = URL.createObjectURL(file);
-									a.download = currentPeer?.name + '.conf';
+									a.download = currentPeer?.name.replaceAll('-', '') + '.conf';
 									a.click();
 								}}
 								class="ml-2 rounded bg-green-500 px-2 py-1 font-bold max-md:text-sm"
