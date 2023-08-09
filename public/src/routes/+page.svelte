@@ -293,7 +293,9 @@
 									'text-red-500'} hover:bg-slate-800"
 							>
 								<td class="px-2 py-1 max-md:py-2">{i + 1}</td>
-								<td class="px-2 py-1 max-md:py-2">{peer.name}</td>
+								<td class="px-2 py-1 max-md:py-2 {sortBy === 'name' && 'bg-gray-950 font-black'}"
+									>{peer.name}</td
+								>
 								<td class="px-2 py-1 max-md:py-2 {sortBy === 'expiry' && 'bg-gray-950 font-black'}">
 									{formatSeconds(peer.expiresAt)}
 								</td>
@@ -415,17 +417,17 @@
 										editingCurrentPeer = true;
 									}}
 									class="ml-2 rounded bg-orange-500 px-2 py-1 font-bold max-md:text-sm"
-									><img src="/edit.png" alt="edit" /></button
+									><img class="h-6 w-6" src="/edit.png" alt="edit" /></button
 								>
 								<button
 									on:click={() => deletePeer(currentPeer?.name || '')}
 									class="ml-2 rounded bg-red-500 px-2 py-1 font-bold max-md:text-sm"
-									><img src="/delete.png" alt="delete" /></button
+									><img class="h-6 w-6" src="/delete.png" alt="delete" /></button
 								>
 								<button
 									on:click={() => resetPeerUsage(currentPeer?.name || '')}
 									class="ml-2 rounded bg-orange-500 px-2 py-1 font-bold max-md:text-sm"
-									><img src="/reset.png" alt="reset" /></button
+									><img class="h-6 w-6" src="/reset.png" alt="reset" /></button
 								>
 							{/if}
 							<button
@@ -435,7 +437,7 @@
 									showQR = true;
 								}}
 								class="ml-2 rounded bg-green-500 px-2 py-1 font-bold max-md:text-sm"
-								><img src="/qr.png" alt="qrcode" /></button
+								><img class="h-6 w-6" src="/qr.png" alt="qrcode" /></button
 							>
 							<button
 								on:click={async () => {
@@ -447,7 +449,7 @@
 									a.click();
 								}}
 								class="ml-2 rounded bg-green-500 px-2 py-1 font-bold max-md:text-sm"
-								><img src="download.png" alt="download" /></button
+								><img class="h-6 w-6" src="download.png" alt="download" /></button
 							>
 						</div>
 						{#if deletePeerError}
