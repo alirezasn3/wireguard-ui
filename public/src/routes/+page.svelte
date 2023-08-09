@@ -293,8 +293,9 @@
 									'text-red-500'} hover:bg-slate-800"
 							>
 								<td class="px-2 py-1 max-md:py-2">{i + 1}</td>
-								<td class="px-2 py-1 max-md:py-2 {sortBy === 'name' && 'bg-gray-950 font-black'}"
-									>{peer.name}</td
+								<td
+									class="min-w-40 px-2 py-1 max-md:py-2 {sortBy === 'name' &&
+										'bg-gray-950 font-black'}">{peer.name}</td
 								>
 								<td class="px-2 py-1 max-md:py-2 {sortBy === 'expiry' && 'bg-gray-950 font-black'}">
 									{formatSeconds(peer.expiresAt)}
@@ -306,7 +307,7 @@
 								<td class="px-2 py-1 max-md:py-2 {sortBy === 'usage' && 'bg-gray-950 font-black'}"
 									>{formatBytes(peer.totalUsage)}</td
 								>
-								<td class="px-2 py-1 max-md:py-2">{formatBytes(peer.allowedUsage)}</td>
+								<td class="min-w-32 px-2 py-1 max-md:py-2">{formatBytes(peer.allowedUsage)}</td>
 							</tr>
 						{/each}
 					</tbody>
