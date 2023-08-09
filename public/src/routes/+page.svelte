@@ -239,7 +239,7 @@
 								on:click={() => {
 									sortBy = 'name';
 								}}
-								class="min-w-40 p-2 hover:cursor-pointer hover:underline {sortBy === 'name' &&
+								class="p-2 hover:cursor-pointer hover:underline {sortBy === 'name' &&
 									'bg-gray-950 font-black'}">Name</th
 							>
 							<th
@@ -277,7 +277,7 @@
 							>
 								Usage</th
 							>
-							<th class="min-w-32 p-2">Allowed Usage</th>
+							<th class="p-2">Allowed Usage</th>
 						</tr>
 					</thead>
 					<tbody
@@ -293,9 +293,8 @@
 									'text-red-500'} hover:bg-slate-800"
 							>
 								<td class="px-2 py-1 max-md:py-2">{i + 1}</td>
-								<td
-									class="min-w-40 px-2 py-1 max-md:py-2 {sortBy === 'name' &&
-										'bg-gray-950 font-black'}">{peer.name}</td
+								<td class="px-2 py-1 max-md:py-2 {sortBy === 'name' && 'bg-gray-950 font-black'}"
+									>{peer.name}</td
 								>
 								<td class="px-2 py-1 max-md:py-2 {sortBy === 'expiry' && 'bg-gray-950 font-black'}">
 									{formatSeconds(peer.expiresAt)}
@@ -307,7 +306,7 @@
 								<td class="px-2 py-1 max-md:py-2 {sortBy === 'usage' && 'bg-gray-950 font-black'}"
 									>{formatBytes(peer.totalUsage)}</td
 								>
-								<td class="min-w-32 px-2 py-1 max-md:py-2">{formatBytes(peer.allowedUsage)}</td>
+								<td class="px-2 py-1 max-md:py-2">{formatBytes(peer.allowedUsage)}</td>
 							</tr>
 						{/each}
 					</tbody>
@@ -421,14 +420,14 @@
 									><img class="h-6 w-6" src="/edit.png" alt="edit" /></button
 								>
 								<button
-									on:click={() => deletePeer(currentPeer?.name || '')}
-									class="ml-2 rounded bg-red-500 px-2 py-1 font-bold max-md:text-sm"
-									><img class="h-6 w-6" src="/delete.png" alt="delete" /></button
-								>
-								<button
 									on:click={() => resetPeerUsage(currentPeer?.name || '')}
 									class="ml-2 rounded bg-orange-500 px-2 py-1 font-bold max-md:text-sm"
 									><img class="h-6 w-6" src="/reset.png" alt="reset" /></button
+								>
+								<button
+									on:click={() => deletePeer(currentPeer?.name || '')}
+									class="ml-2 rounded bg-red-500 px-2 py-1 font-bold max-md:text-sm"
+									><img class="h-6 w-6" src="/delete.png" alt="delete" /></button
 								>
 							{/if}
 							<button
