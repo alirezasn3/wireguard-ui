@@ -604,7 +604,7 @@ func main() {
 		}
 		c.AbortWithStatus(200)
 	})
-	r.GET("/api/reset-usage/:name",func(c *gin.Context) {
+	r.GET("/api/reset-usage/:name", func(c *gin.Context) {
 		ra := c.Request.Header.Get("X-Real-IP")
 		if ra == "" {
 			ra = c.Request.RemoteAddr
