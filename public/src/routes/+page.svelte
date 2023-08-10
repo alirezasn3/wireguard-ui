@@ -413,6 +413,11 @@
 					{:else}
 						<div class="mb-2 flex justify-end break-keep border-slate-700 max-md:text-sm">
 							{#if dashboardInfo.isAdmin}
+							<button
+								on:click={() => deletePeer(currentPeer?.name || '')}
+								class="ml-2 rounded-full p-2 bg-red-500 px-2 py-1 font-bold max-md:text-sm"
+								><img class="h-6 w-6" src="/delete.png" alt="delete" /></button
+							>
 								<button
 									on:click={() => {
 										if (currentPeer) {
@@ -426,18 +431,13 @@
 										}
 										editingCurrentPeer = true;
 									}}
-									class="ml-2 rounded bg-orange-500 px-2 py-1 font-bold max-md:text-sm"
+									class="ml-2 rounded-full p-2 bg-orange-500 px-2 py-1 font-bold max-md:text-sm"
 									><img class="h-6 w-6" src="/edit.png" alt="edit" /></button
 								>
 								<button
 									on:click={() => resetPeerUsage(currentPeer?.name || '')}
-									class="ml-2 rounded bg-orange-500 px-2 py-1 font-bold max-md:text-sm"
+									class="ml-2 rounded-full p-2 bg-orange-500 px-2 py-1 font-bold max-md:text-sm"
 									><img class="h-6 w-6" src="/reset.png" alt="reset" /></button
-								>
-								<button
-									on:click={() => deletePeer(currentPeer?.name || '')}
-									class="ml-2 rounded bg-red-500 px-2 py-1 font-bold max-md:text-sm"
-									><img class="h-6 w-6" src="/delete.png" alt="delete" /></button
 								>
 							{/if}
 							<button
@@ -446,7 +446,7 @@
 									qr.toCanvas(document.getElementById('qr-canvas'), config);
 									showQR = true;
 								}}
-								class="ml-2 rounded bg-green-500 px-2 py-1 font-bold max-md:text-sm"
+								class="ml-2 rounded-full p-2 bg-green-500 px-2 py-1 font-bold max-md:text-sm"
 								><img class="h-6 w-6" src="/qr.png" alt="qrcode" /></button
 							>
 							<button
@@ -458,7 +458,7 @@
 									a.download = currentPeer?.name.replaceAll('-', '') + '.conf';
 									a.click();
 								}}
-								class="ml-2 rounded bg-green-500 px-2 py-1 font-bold max-md:text-sm"
+								class="ml-2 rounded-full p-2 bg-green-500 px-2 py-1 font-bold max-md:text-sm"
 								><img class="h-6 w-6" src="download.png" alt="download" /></button
 							>
 						</div>
@@ -468,7 +468,7 @@
 						{#if resetPeerUsageError}
 							<div class="mb-2 text-red-500">{resetPeerUsageError}</div>
 						{/if}
-						<div class="mb-2">
+						<div class="mb-2 {!dashboardInfo.isAdmin && "hidden"}">
 							<div class="font-bold">Address:</div>
 							<div class="ml-4 text-sm text-slate-300">{currentPeer.address}</div>
 						</div>
@@ -478,7 +478,7 @@
 								{formatBytes(currentPeer.totalUsage)}/{formatBytes(currentPeer.allowedUsage)}
 							</div>
 						</div>
-						<div class="mb-2">
+						<div class="mb-2 {!dashboardInfo.isAdmin && "hidden"}">
 							<div class="font-bold">Bandwidth:</div>
 							<div class="">
 								<div class="ml-4 text-sm text-slate-300">
