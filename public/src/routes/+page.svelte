@@ -239,7 +239,7 @@
 				>
 					<thead class="border-b-2 border-slate-800">
 						<tr class="select-none">
-							<th class="p-2">#</th>
+							<th class="p-2 {!dashboardInfo.isAdmin&& "hidden"}">#</th>
 							<th
 								on:click={() => {
 									sortBy = 'name';
@@ -267,7 +267,7 @@
 									sortBy = 'bandwidth';
 								}}
 								class="p-2 hover:cursor-pointer hover:underline {sortBy === 'bandwidth' &&
-									'bg-gray-950 font-black'}">Bandwidth</th
+									'bg-gray-950 font-black'} {!dashboardInfo.isAdmin&& "hidden"}">Bandwidth</th
 							>
 							<th
 								on:click={() => {
@@ -297,7 +297,7 @@
 								class="{Math.trunc(peer.expiresAt - Date.now() / 1000) < 0 &&
 									'text-red-500'} hover:bg-slate-800"
 							>
-								<td class="px-2 py-1 max-md:py-2">{i + 1}</td>
+								<td class="px-2 py-1 max-md:py-2 {!dashboardInfo.isAdmin&& "hidden"}">{i + 1}</td>
 								<td class="px-2 py-1 max-md:py-2 {sortBy === 'name' && 'bg-gray-950 font-black'}"
 									>{peer.name}</td
 								>
@@ -305,7 +305,7 @@
 									{formatSeconds(peer.expiresAt)}
 								</td>
 								<td
-									class="px-2 py-1 max-md:py-2 {sortBy === 'bandwidth' && 'bg-gray-950 font-black'}"
+									class="px-2 py-1 max-md:py-2 {sortBy === 'bandwidth' && 'bg-gray-950 font-black'} {!dashboardInfo.isAdmin&& "hidden"}"
 									>{formatBytes(peer.currentRx)}</td
 								>
 								<td class="px-2 py-1 max-md:py-2 {sortBy === 'usage' && 'bg-gray-950 font-black'}"
