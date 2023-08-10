@@ -620,7 +620,7 @@ func main() {
 			return
 		}
 		peer.TotalUsage = 0
-		err := config.Collection.UpdateOne(
+		_, err := config.Collection.UpdateOne(
 			context.TODO(),
 			bson.M{"publicKey": peer.PublicKey},
 			bson.M{"$set": bson.M{"totalUsage": 0}})
