@@ -56,7 +56,7 @@ type Peer struct {
 	CurrentTx       uint64             `bson:"-" json:"currentTx"`
 	Suspended       bool               `bson:"suspended" json:"suspended"`
 	AllowedUsage    uint64             `bson:"allowedUsage" json:"allowedUsage"`
-	TotalUsage      uint64             `bson:"totalUsage" json:"totalUsage"`
+	TotalUsage      int64             `bson:"totalUsage" json:"totalUsage"`
 	IsAdmin         bool               `bson:"isAdmin" json:"isAdmin"`
 }
 
