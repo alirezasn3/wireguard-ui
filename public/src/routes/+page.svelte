@@ -415,8 +415,8 @@
 							{#if dashboardInfo.isAdmin}
 							<button
 								on:click={() => deletePeer(currentPeer?.name || '')}
-								class="ml-2 rounded-full p-4 bg-red-500 font-bold max-md:text-sm"
-								><img class="h-8 w-8 invert" src="/delete.png" alt="delete" /></button
+								class="ml-2 rounded-full p-2 bg-red-500 font-bold max-md:text-sm"
+								><img class="h-6 w-6 invert" src="/delete.png" alt="delete" /></button
 							>
 								<button
 									on:click={() => {
@@ -431,13 +431,13 @@
 										}
 										editingCurrentPeer = true;
 									}}
-									class="ml-2 rounded-full p-4 bg-orange-500 font-bold max-md:text-sm"
-									><img class="h-8 w-8 invert" src="/edit.png" alt="edit" /></button
+									class="ml-2 rounded-full p-2 bg-orange-500 font-bold max-md:text-sm"
+									><img class="h-6 w-6 invert" src="/edit.png" alt="edit" /></button
 								>
 								<button
 									on:click={() => resetPeerUsage(currentPeer?.name || '')}
-									class="ml-2 rounded-full p-4 bg-orange-500 font-bold max-md:text-sm"
-									><img class="h-8 w-8 invert" src="/reset.png" alt="reset" /></button
+									class="ml-2 rounded-full p-2 bg-orange-500 font-bold max-md:text-sm"
+									><img class="h-6 w-6 invert" src="/reset.png" alt="reset" /></button
 								>
 							{/if}
 							<button
@@ -446,8 +446,8 @@
 									qr.toCanvas(document.getElementById('qr-canvas'), config);
 									showQR = true;
 								}}
-								class="ml-2 rounded-full p-4 bg-green-500 font-bold max-md:text-sm"
-								><img class="h-8 w-8 invert" src="/qr.png" alt="qrcode" /></button
+								class="ml-2 rounded-full p-2 bg-green-500 font-bold max-md:text-sm"
+								><img class="h-6 w-6 invert" src="/qr.png" alt="qrcode" /></button
 							>
 							<button
 								on:click={async () => {
@@ -458,8 +458,8 @@
 									a.download = currentPeer?.name.replaceAll('-', '') + '.conf';
 									a.click();
 								}}
-								class="ml-2 rounded-full p-4 bg-green-500 font-bold max-md:text-sm"
-								><img class="h-8 w-8 invert" src="download.png" alt="download" /></button
+								class="ml-2 rounded-full p-2 bg-green-500 font-bold max-md:text-sm"
+								><img class="h-6 w-6 invert" src="download.png" alt="download" /></button
 							>
 						</div>
 						{#if deletePeerError}
