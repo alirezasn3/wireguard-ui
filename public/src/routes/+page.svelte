@@ -298,14 +298,14 @@
 									currentPeer = peer;
 									document.body.style.overflowY = 'hidden';
 								}}
-								class="{Math.trunc(peer.expiresAt - Date.now() / 1000) < 0 &&
-									'text-red-500'} hover:bg-slate-800"
+								class="hover:bg-slate-800"
 							>
 								<td class="px-2 py-1 max-md:py-2 {!dashboardInfo.isAdmin&& "hidden"}">{i + 1}</td>
 								<td class="px-2 py-1 max-md:py-2 {sortBy === 'name' && 'bg-gray-950 font-black'}"
 									>{peer.name}</td
 								>
-								<td class="px-2 py-1 max-md:py-2 {sortBy === 'expiry' && 'bg-gray-950 font-black'}">
+								<td class="px-2 py-1 max-md:py-2 {sortBy === 'expiry' && 'bg-gray-950 font-black'} {Math.trunc(peer.expiresAt - Date.now() / 1000) < 0 &&
+									'text-red-500'}">
 									{formatSeconds(peer.expiresAt)}
 								</td>
 								<td
@@ -313,12 +313,15 @@
 									>{formatBytes(peer.currentRx)}</td
 								>
 								{#if dashboardInfo.isAdmin}
-								<td class="px-2 py-1 max-md:py-2 {sortBy === 'usage' && 'bg-gray-950 font-black'}"
+								<td class="px-2 py-1 max-md:py-2 {sortBy === 'usage' && 'bg-gray-950 font-black'} { peer.totalUsage >= peer.allowedUsage &&
+									'text-red-500'}"
 								>{formatBytes(peer.totalUsage)}</td
 								>
-								<td class="px-2 py-1 max-md:py-2">{formatBytes(peer.allowedUsage)}</td>
+								<td class="px-2 py-1 max-md:py-2 { peer.totalUsage >= peer.allowedUsage &&
+									'text-red-500'}">{formatBytes(peer.allowedUsage)}</td>
 								{:else}
-								<td class="px-2 py-1 max-md:py-2">{formatBytes(peer.totalUsage)} / {formatBytes(peer.allowedUsage)}</td>
+								<td class="px-2 py-1 max-md:py-2 { peer.totalUsage >= peer.allowedUsage &&
+									'text-red-500'}">{formatBytes(peer.totalUsage)} / {formatBytes(peer.allowedUsage)}</td>
 								{/if}
 							</tr>
 						{/each}
