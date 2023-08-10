@@ -269,8 +269,9 @@
 								class="p-2 hover:cursor-pointer hover:underline {sortBy === 'bandwidth' &&
 									'bg-gray-950 font-black'} {!dashboardInfo.isAdmin&& "hidden"}">Bandwidth</th
 							>
+							{#if dashboardInfo.isAdmin}
 							<th
-								on:click={() => {
+							on:click={() => {
 									if (sortBy == 'usage') {
 										if (sortOrder < 0) sortOrder = 1;
 										else sortOrder = -1;
@@ -280,9 +281,12 @@
 								class="p-2 hover:cursor-pointer hover:underline {sortBy === 'usage' &&
 									'bg-gray-950 font-black'}"
 							>
-								Usage</th
+							Usage</th
 							>
 							<th class="p-2">Allowed Usage</th>
+							{:else}
+								<th class="p-2">Usage</th>
+							{/if}
 						</tr>
 					</thead>
 					<tbody
@@ -308,10 +312,15 @@
 									class="px-2 py-1 max-md:py-2 {sortBy === 'bandwidth' && 'bg-gray-950 font-black'} {!dashboardInfo.isAdmin&& "hidden"}"
 									>{formatBytes(peer.currentRx)}</td
 								>
+								{#if }
+									
 								<td class="px-2 py-1 max-md:py-2 {sortBy === 'usage' && 'bg-gray-950 font-black'}"
-									>{formatBytes(peer.totalUsage)}</td
+								>{formatBytes(peer.totalUsage)}</td
 								>
 								<td class="px-2 py-1 max-md:py-2">{formatBytes(peer.allowedUsage)}</td>
+								{:else}
+								<td class="px-2 py-1 max-md:py-2">{formatBytes(peer.totalUsage)} / {formatBytes(peer.allowedUsage)}</td>
+								{/if}
 							</tr>
 						{/each}
 					</tbody>
