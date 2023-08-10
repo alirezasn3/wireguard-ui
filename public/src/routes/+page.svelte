@@ -166,7 +166,7 @@
 		try {
 			const res = await fetch('/api/peers/' + name, {
 				method: 'PATCH',
-				body: JSON.stringify({ totalUsage: -1 })
+				body: JSON.stringify({ totalUsage: 1})
 			});
 			if (res.status === 200) {
 				editingCurrentPeer = false;

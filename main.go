@@ -56,7 +56,7 @@ type Peer struct {
 	CurrentTx       uint64             `bson:"-" json:"currentTx"`
 	Suspended       bool               `bson:"suspended" json:"suspended"`
 	AllowedUsage    uint64             `bson:"allowedUsage" json:"allowedUsage"`
-	TotalUsage      int64             `bson:"totalUsage" json:"totalUsage"`
+	TotalUsage      uint64             `bson:"totalUsage" json:"totalUsage"`
 	IsAdmin         bool               `bson:"isAdmin" json:"isAdmin"`
 }
 
@@ -533,7 +533,7 @@ func main() {
 		if newPeer.Name != "" {
 			peer.Name = newPeer.Name
 		}
-		if newPeer.TotalUsage == -1 {
+		if newPeer.TotalUsage == 1 {
 			peer.TotalUsage = 0
 		}
 		if newPeer.AllowedUsage != 0 {
