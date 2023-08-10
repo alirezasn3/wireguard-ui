@@ -415,7 +415,7 @@
 							{#if dashboardInfo.isAdmin}
 							<button
 								on:click={() => deletePeer(currentPeer?.name || '')}
-								class="ml-2 rounded-full p-2 bg-red-500 px-2 py-1 font-bold max-md:text-sm"
+								class="ml-2 rounded-full p-4 bg-red-500 font-bold max-md:text-sm"
 								><img class="h-6 w-6" src="/delete.png" alt="delete" /></button
 							>
 								<button
@@ -431,12 +431,12 @@
 										}
 										editingCurrentPeer = true;
 									}}
-									class="ml-2 rounded-full p-2 bg-orange-500 px-2 py-1 font-bold max-md:text-sm"
+									class="ml-2 rounded-full p-4 bg-orange-500 font-bold max-md:text-sm"
 									><img class="h-6 w-6" src="/edit.png" alt="edit" /></button
 								>
 								<button
 									on:click={() => resetPeerUsage(currentPeer?.name || '')}
-									class="ml-2 rounded-full p-2 bg-orange-500 px-2 py-1 font-bold max-md:text-sm"
+									class="ml-2 rounded-full p-4 bg-orange-500 font-bold max-md:text-sm"
 									><img class="h-6 w-6" src="/reset.png" alt="reset" /></button
 								>
 							{/if}
@@ -446,7 +446,7 @@
 									qr.toCanvas(document.getElementById('qr-canvas'), config);
 									showQR = true;
 								}}
-								class="ml-2 rounded-full p-2 bg-green-500 px-2 py-1 font-bold max-md:text-sm"
+								class="ml-2 rounded-full p-4 bg-green-500 font-bold max-md:text-sm"
 								><img class="h-6 w-6" src="/qr.png" alt="qrcode" /></button
 							>
 							<button
@@ -458,7 +458,7 @@
 									a.download = currentPeer?.name.replaceAll('-', '') + '.conf';
 									a.click();
 								}}
-								class="ml-2 rounded-full p-2 bg-green-500 px-2 py-1 font-bold max-md:text-sm"
+								class="ml-2 rounded-full p-4 bg-green-500 font-bold max-md:text-sm"
 								><img class="h-6 w-6" src="download.png" alt="download" /></button
 							>
 						</div>
@@ -475,7 +475,7 @@
 						<div class="mb-2">
 							<div class="font-bold">Usage:</div>
 							<div class="ml-4 text-sm text-slate-300">
-								{formatBytes(currentPeer.totalUsage)}/{formatBytes(currentPeer.allowedUsage)}
+								{formatBytes(currentPeer.totalUsage)} / {formatBytes(currentPeer.allowedUsage)}
 							</div>
 						</div>
 						<div class="mb-2 {!dashboardInfo.isAdmin && "hidden"}">
