@@ -164,10 +164,7 @@
 
 	async function resetPeerUsage(name: string) {
 		try {
-			const res = await fetch('/api/peers/' + name, {
-				method: 'PATCH',
-				body: JSON.stringify({ totalUsage: 1})
-			});
+			const res = await fetch('/api/reset-usage/' + name);
 			if (res.status === 200) {
 				editingCurrentPeer = false;
 				currentPeer = null;
