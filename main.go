@@ -533,7 +533,7 @@ func main() {
 		if newPeer.Name != "" {
 			peer.Name = newPeer.Name
 		}
-		if newPeer.TotalUsage == 0 {
+		if newPeer.TotalUsage == -1 {
 			peer.TotalUsage = 0
 		}
 		if newPeer.AllowedUsage != 0 {
