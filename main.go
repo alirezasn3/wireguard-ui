@@ -544,7 +544,7 @@ func main() {
 		_, err = config.Collection.UpdateOne(
 			context.TODO(),
 			bson.M{"publicKey": peer.PublicKey},
-			bson.M{"$set": bson.M{"expiresAt": peer.ExpiresAt, "name": peer.Name, "allowedUsage": peer.AllowedUsage, "totalUsage": toatlUsage}})
+			bson.M{"$set": bson.M{"expiresAt": peer.ExpiresAt, "name": peer.Name, "allowedUsage": peer.AllowedUsage, "totalUsage": totalUsage}})
 		if err != nil {
 			fmt.Println(err)
 			c.AbortWithStatus(400)
