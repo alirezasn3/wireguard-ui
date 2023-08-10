@@ -416,7 +416,7 @@
 							<button
 								on:click={() => deletePeer(currentPeer?.name || '')}
 								class="ml-2 rounded-full p-4 bg-red-500 font-bold max-md:text-sm"
-								><img class="h-7 w-7" src="/delete.png" alt="delete" /></button
+								><img class="h-8 w-8 invert" src="/delete.png" alt="delete" /></button
 							>
 								<button
 									on:click={() => {
@@ -432,12 +432,12 @@
 										editingCurrentPeer = true;
 									}}
 									class="ml-2 rounded-full p-4 bg-orange-500 font-bold max-md:text-sm"
-									><img class="h-7 w-7" src="/edit.png" alt="edit" /></button
+									><img class="h-8 w-8 invert" src="/edit.png" alt="edit" /></button
 								>
 								<button
 									on:click={() => resetPeerUsage(currentPeer?.name || '')}
 									class="ml-2 rounded-full p-4 bg-orange-500 font-bold max-md:text-sm"
-									><img class="h-7 w-7" src="/reset.png" alt="reset" /></button
+									><img class="h-8 w-8 invert" src="/reset.png" alt="reset" /></button
 								>
 							{/if}
 							<button
@@ -447,7 +447,7 @@
 									showQR = true;
 								}}
 								class="ml-2 rounded-full p-4 bg-green-500 font-bold max-md:text-sm"
-								><img class="h-7 w-7" src="/qr.png" alt="qrcode" /></button
+								><img class="h-8 w-8 invert" src="/qr.png" alt="qrcode" /></button
 							>
 							<button
 								on:click={async () => {
@@ -459,7 +459,7 @@
 									a.click();
 								}}
 								class="ml-2 rounded-full p-4 bg-green-500 font-bold max-md:text-sm"
-								><img class="h-7 w-7" src="download.png" alt="download" /></button
+								><img class="h-8 w-8 invert" src="download.png" alt="download" /></button
 							>
 						</div>
 						{#if deletePeerError}
