@@ -312,8 +312,7 @@
 									class="px-2 py-1 max-md:py-2 {sortBy === 'bandwidth' && 'bg-gray-950 font-black'} {!dashboardInfo.isAdmin&& "hidden"}"
 									>{formatBytes(peer.currentRx)}</td
 								>
-								{#if }
-									
+								{#if dashboardInfo.isAdmin}
 								<td class="px-2 py-1 max-md:py-2 {sortBy === 'usage' && 'bg-gray-950 font-black'}"
 								>{formatBytes(peer.totalUsage)}</td
 								>
