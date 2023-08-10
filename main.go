@@ -533,10 +533,6 @@ func main() {
 		if newPeer.Name != "" {
 			peer.Name = newPeer.Name
 		}
-		totalUsage := peer.TotalUsage 
-		if newPeer.TotalUsage == 1 {
-			totalUsage = 0
-		}
 		if newPeer.AllowedUsage != 0 {
 			diff := newPeer.AllowedUsage - peer.AllowedUsage
 			peer.AllowedUsage += diff
@@ -604,6 +600,33 @@ func main() {
 				fmt.Println(err)
 				c.AbortWithStatus(500)
 			}
+			return
+		}
+		c.AbortWithStatus(200)
+	})
+	r.GET("/api/reset-usage/:name",func(c *gin.Context) {
+		ra := c.Request.Header.Get("X-Real-IP")
+		if ra == "" {
+			ra = c.Request.RemoteAddr
+		}
+		client := findPeerByIp(strings.Split(ra, ":")[0])
+		if client == nil || !client.IsAdmin {
+			c.AbortWithStatus(403)
+			return
+		}
+		peer := findPeerByName(c.Param("name"))
+		if peer == nil {
+			c.AbortWithStatus(400)
+			return
+		}
+		peer.TotalUsage = 0
+		, err = config.Collection.UpdateOne(
+			context.TODO(),
+			bson.M{"publicKey": peer.PublicKey},
+			bson.M{"$set": bson.M{"totalUsage": 0}})
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(400)
 			return
 		}
 		c.AbortWithStatus(200)
