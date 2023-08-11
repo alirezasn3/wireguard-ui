@@ -330,7 +330,7 @@ func updatePeers() {
 		}
 
 		// revive suspended peers
-		if config.Peers[publicKey].Suspended && (config.Peers[publicKey].ExpiresAt > uint64(time.Now().Unix()) ||
+		if config.Peers[publicKey].Suspended && (config.Peers[publicKey].ExpiresAt > uint64(time.Now().Unix()) &&
 			config.Peers[publicKey].TotalUsage < config.Peers[publicKey].AllowedUsage) {
 			fmt.Println("reviving " + config.Peers[publicKey].Name)
 
