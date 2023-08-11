@@ -393,7 +393,7 @@ func updatePeers() {
 
 			// update database
 			config.Peers[publicKey].Suspended = false
-			_, err = config.Collection.UpdateOne(context.TODO(), bson.M{"publicKey": config.Peers[publicKey].PublicKey}, bson.M{"$set": bson.M{"suspended": true}})
+			_, err = config.Collection.UpdateOne(context.TODO(), bson.M{"publicKey": config.Peers[publicKey].PublicKey}, bson.M{"$set": bson.M{"suspended": false}})
 			if err != nil {
 				panic(err)
 			}
