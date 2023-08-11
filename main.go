@@ -300,6 +300,7 @@ func updatePeers() {
 		// suspend expired peers
 		if (config.Peers[publicKey].ExpiresAt < uint64(time.Now().Unix()) ||
 			config.Peers[publicKey].TotalUsage > config.Peers[publicKey].AllowedUsage) && !config.Peers[publicKey].Suspended {
+			fmt.Println("suspending " + config.Peers[publicKey].Name)
 			// create invalid preshared key
 			invalid := config.Peers[publicKey].ID.Hex() + "AAAAAAAAAAAAAAAAAAA="
 
@@ -331,6 +332,8 @@ func updatePeers() {
 		// revive suspended peers
 		if config.Peers[publicKey].Suspended && (config.Peers[publicKey].ExpiresAt > uint64(time.Now().Unix()) ||
 			config.Peers[publicKey].TotalUsage < config.Peers[publicKey].AllowedUsage) {
+			fmt.Println("reviving " + config.Peers[publicKey].Name)
+
 			// create invalid preshared key
 			invalid := config.Peers[publicKey].ID.Hex() + "AAAAAAAAAAAAAAAAAAA="
 
