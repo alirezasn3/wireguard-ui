@@ -279,6 +279,13 @@ func updatePeers() {
 
 		// update peer's total usage
 		config.Peers[publicKey].TotalUsage += config.Peers[publicKey].CurrentRx
+		_, err = config.Collection.UpdateOne(
+			context.TODO(),
+			bson.M{"publicKey": publicKey},
+			bson.M{"$set": bson.M{"totalUsage": config.Peers[publicKey].TotalUsage}})
+		if err != nil {
+			fmt.Println(err)
+		}
 
 		// update latest handshake
 		config.Peers[publicKey].LatestHandshake, _ = strconv.ParseUint(string(info[4]), 10, 64)
@@ -290,8 +297,8 @@ func updatePeers() {
 		currentTx += config.Peers[publicKey].CurrentTx
 
 		// suspend expired peers
-		if (config.Peers[publicKey].ExpiresAt < uint64(time.Now().Unix()) && !config.Peers[publicKey].Suspended) ||
-			(config.Peers[publicKey].TotalUsage > config.Peers[publicKey].AllowedUsage && !config.Peers[publicKey].Suspended) {
+		if (config.Peers[publicKey].ExpiresAt < uint64(time.Now().Unix()) ||
+			config.Peers[publicKey].TotalUsage > config.Peers[publicKey].AllowedUsage) && !config.Peers[publicKey].Suspended {
 			// create invalid preshared key
 			invalid := config.Peers[publicKey].ID.Hex() + "AAAAAAAAAAAAAAAAAAA="
 
@@ -321,8 +328,8 @@ func updatePeers() {
 		}
 
 		// revive suspended peers
-		if (config.Peers[publicKey].Suspended && config.Peers[publicKey].ExpiresAt > uint64(time.Now().Unix())) ||
-			(config.Peers[publicKey].Suspended && config.Peers[publicKey].TotalUsage < config.Peers[publicKey].AllowedUsage) {
+		if config.Peers[publicKey].Suspended && (config.Peers[publicKey].ExpiresAt > uint64(time.Now().Unix()) ||
+			config.Peers[publicKey].TotalUsage < config.Peers[publicKey].AllowedUsage) {
 			// create invalid preshared key
 			invalid := config.Peers[publicKey].ID.Hex() + "AAAAAAAAAAAAAAAAAAA="
 
@@ -448,23 +455,6 @@ func main() {
 		}
 	}()
 
-	// update peers totoal usages in datebase every minute
-	go func() {
-		for range time.NewTicker(time.Minute).C {
-			var err error
-			var p *Peer
-			for _, p = range config.Peers {
-				_, err = config.Collection.UpdateOne(
-					context.TODO(),
-					bson.M{"publicKey": p.PublicKey},
-					bson.M{"$set": bson.M{"totalUsage": p.TotalUsage}})
-				if err != nil {
-					fmt.Println(err)
-				}
-			}
-		}
-	}()
-
 	gin.SetMode(gin.ReleaseMode)
 	gin.DefaultWriter = io.Discard
 	r := gin.Default()
@@ -474,10 +464,7 @@ func main() {
 		c.Next()
 	})
 	r.GET("/api/stats", func(c *gin.Context) {
-		ra := c.Request.Header.Get("X-Real-IP")
-		if ra == "" {
-			ra = c.Request.RemoteAddr
-		}
+		ra := c.Request.RemoteAddr
 		peer := findPeerByIp(strings.Split(ra, ":")[0])
 		if peer == nil {
 			c.AbortWithStatus(403)
@@ -506,10 +493,7 @@ func main() {
 		c.JSON(200, data)
 	})
 	r.PATCH("/api/peers/:name", func(c *gin.Context) {
-		ra := c.Request.Header.Get("X-Real-IP")
-		if ra == "" {
-			ra = c.Request.RemoteAddr
-		}
+		ra := c.Request.RemoteAddr
 		client := findPeerByIp(strings.Split(ra, ":")[0])
 		if client == nil || !client.IsAdmin {
 			c.AbortWithStatus(403)
@@ -534,8 +518,7 @@ func main() {
 			peer.Name = newPeer.Name
 		}
 		if newPeer.AllowedUsage != 0 {
-			diff := newPeer.AllowedUsage - peer.AllowedUsage
-			peer.AllowedUsage += diff
+			peer.AllowedUsage += newPeer.AllowedUsage
 		}
 		_, err = config.Collection.UpdateOne(
 			context.TODO(),
@@ -557,10 +540,7 @@ func main() {
 		}
 	})
 	r.POST("/api/peers/:name", func(c *gin.Context) {
-		ra := c.Request.Header.Get("X-Real-IP")
-		if ra == "" {
-			ra = c.Request.RemoteAddr
-		}
+		ra := c.Request.RemoteAddr
 		client := findPeerByIp(strings.Split(ra, ":")[0])
 		if client == nil || !client.IsAdmin {
 			c.AbortWithStatus(403)
@@ -583,10 +563,7 @@ func main() {
 		}
 	})
 	r.DELETE("/api/peers/:name", func(c *gin.Context) {
-		ra := c.Request.Header.Get("X-Real-IP")
-		if ra == "" {
-			ra = c.Request.RemoteAddr
-		}
+		ra := c.Request.RemoteAddr
 		client := findPeerByIp(strings.Split(ra, ":")[0])
 		if client == nil || !client.IsAdmin {
 			c.AbortWithStatus(403)
@@ -605,10 +582,7 @@ func main() {
 		c.AbortWithStatus(200)
 	})
 	r.GET("/api/reset-usage/:name", func(c *gin.Context) {
-		ra := c.Request.Header.Get("X-Real-IP")
-		if ra == "" {
-			ra = c.Request.RemoteAddr
-		}
+		ra := c.Request.RemoteAddr
 		client := findPeerByIp(strings.Split(ra, ":")[0])
 		if client == nil || !client.IsAdmin {
 			c.AbortWithStatus(403)
