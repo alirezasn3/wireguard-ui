@@ -255,6 +255,8 @@ func updatePeers() {
 	// each line contains a peer's info, excluding the first line whichis the interface info
 	peerLines := strings.Split(strings.TrimSpace(string(bytes)), "\n")[1:]
 
+	var operations []mongo.WriteModel
+	operation := mongo.NewUpdateOneModel()
 	var publicKey string
 	var newTotalTx uint64
 	var newTotalRx uint64
@@ -281,13 +283,16 @@ func updatePeers() {
 
 		// update peer's total usage
 		config.Peers[publicKey].TotalUsage += config.Peers[publicKey].CurrentRx
-		_, err = config.Collection.UpdateOne(
-			context.TODO(),
-			bson.M{"publicKey": publicKey},
-			bson.M{"$set": bson.M{"totalUsage": config.Peers[publicKey].TotalUsage}})
-		if err != nil {
-			fmt.Println(err)
-		}
+		operation.SetFilter(bson.M{"publicKey": publicKey})
+		operation.SetUpdate(bson.M{"$set": bson.M{"totalUsage": config.Peers[publicKey].TotalUsage}})
+		operations = append(operations, operation)
+		// _, err = config.Collection.UpdateOne(
+		// 	context.TODO(),
+		// 	bson.M{"publicKey": publicKey},
+		// 	bson.M{"$set": bson.M{"totalUsage": config.Peers[publicKey].TotalUsage}})
+		// if err != nil {
+		// 	fmt.Println(err)
+		// }
 
 		// update latest handshake
 		config.Peers[publicKey].LatestHandshake, _ = strconv.ParseUint(string(info[4]), 10, 64)
@@ -400,6 +405,11 @@ func updatePeers() {
 	config.TotalTx = totalTx
 	config.CurrentRx = currentRx
 	config.CurrentTx = currentTx
+
+	_, err = config.Collection.BulkWrite(context.TODO(), operations, &options.BulkWriteOptions{})
+	if err != nil {
+		fmt.Println(err)
+	}
 }
 
 func findPeerByIp(ip string) *Peer {
