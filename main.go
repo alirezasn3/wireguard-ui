@@ -311,6 +311,7 @@ func updatePeers() {
 				fmt.Println(err)
 				continue
 			}
+			fmt.Println(cmd)
 
 			// save chagnes to main config file
 			cmd = exec.Command("wg", "syncconf", config.InterfaceName, fmt.Sprintf("%s/%s.conf", config.Path, config.InterfaceName))
@@ -319,6 +320,7 @@ func updatePeers() {
 				fmt.Println(err)
 				continue
 			}
+			fmt.Println(cmd)
 
 			// update database
 			config.Peers[publicKey].Suspended = true
