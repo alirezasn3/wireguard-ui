@@ -269,13 +269,14 @@ func updatePeers() {
 
 		newTotalTx, _ = strconv.ParseUint(string(info[5]), 10, 64)
 		newTotalRx, _ = strconv.ParseUint(string(info[6]), 10, 64)
-		// update total rx and tx
-		config.Peers[publicKey].TotalRx = newTotalRx
-		config.Peers[publicKey].TotalTx = newTotalTx
 
 		// update current rx and tx
 		config.Peers[publicKey].CurrentRx = newTotalRx - config.Peers[publicKey].TotalRx
 		config.Peers[publicKey].CurrentTx = newTotalTx - config.Peers[publicKey].TotalTx
+
+		// update total rx and tx
+		config.Peers[publicKey].TotalRx = newTotalRx
+		config.Peers[publicKey].TotalTx = newTotalTx
 
 		// update peer's total usage
 		config.Peers[publicKey].TotalUsage += config.Peers[publicKey].CurrentRx
@@ -444,6 +445,36 @@ func init() {
 	}
 	for i, p := range data {
 		config.Peers[p.PublicKey] = &data[i]
+	}
+
+	// get peers info from wg
+	cmd := exec.Command("wg", "show", config.InterfaceName, "dump")
+	bytes, err = cmd.Output()
+	if err != nil {
+		panic(err)
+	}
+
+	// each line contains a peer's info, excluding the first line whichis the interface info
+	peerLines := strings.Split(strings.TrimSpace(string(bytes)), "\n")[1:]
+
+	var publicKey string
+	var newTotalTx uint64
+	var newTotalRx uint64
+	for _, p := range peerLines {
+		info := strings.Split(p, "\t")
+
+		// find public key
+		publicKey = info[0]
+
+		if config.Peers[publicKey] == nil {
+			continue
+		}
+
+		// update total rx and tx
+		newTotalTx, _ = strconv.ParseUint(string(info[5]), 10, 64)
+		newTotalRx, _ = strconv.ParseUint(string(info[6]), 10, 64)
+		config.Peers[publicKey].TotalRx = newTotalRx
+		config.Peers[publicKey].TotalTx = newTotalTx
 	}
 }
 
