@@ -187,8 +187,8 @@ func createPeer(name string, isAdmin bool) (*Peer, error) {
 		panic(err)
 	}
 
-	// save chagnes to main config file
-	cmd = exec.Command("wg", "syncconf", config.InterfaceName, fmt.Sprintf("%s/%s.conf", config.Path, config.InterfaceName))
+	// hot reload
+	cmd = exec.Command("sh", config.Path+"/scripts/hot-reload.sh", config.InterfaceName)
 	_, err = cmd.Output()
 	if err != nil {
 		return nil, err
@@ -313,8 +313,8 @@ func updatePeers() {
 			}
 			fmt.Println(cmd)
 
-			// save chagnes to main config file
-			cmd = exec.Command("wg", "syncconf", config.InterfaceName, fmt.Sprintf("%s/%s.conf", config.Path, config.InterfaceName))
+			// hot reload
+			cmd = exec.Command("sh", config.Path+"/scripts/hot-reload.sh", config.InterfaceName)
 			_, err = cmd.Output()
 			if err != nil {
 				fmt.Println(err)
@@ -354,8 +354,8 @@ func updatePeers() {
 				panic(err)
 			}
 
-			// save chagnes to main config file
-			cmd = exec.Command("wg", "syncconf", config.InterfaceName, fmt.Sprintf("%s/%s.conf", config.Path, config.InterfaceName))
+			// hot reload
+			cmd = exec.Command("sh", config.Path+"/scripts/hot-reload.sh", config.InterfaceName)
 			_, err = cmd.Output()
 			if err != nil {
 				panic(err)
