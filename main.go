@@ -301,6 +301,7 @@ func updatePeers() {
 		if (config.Peers[publicKey].ExpiresAt < uint64(time.Now().Unix()) ||
 			config.Peers[publicKey].TotalUsage > config.Peers[publicKey].AllowedUsage) && !config.Peers[publicKey].Suspended {
 			fmt.Println("suspending " + config.Peers[publicKey].Name)
+
 			// create invalid preshared key
 			invalid := config.Peers[publicKey].ID.Hex() + "AAAAAAAAAAAAAAAAAAA="
 
