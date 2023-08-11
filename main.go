@@ -278,11 +278,6 @@ func updatePeers() {
 		config.Peers[publicKey].CurrentTx = newTotalTx - config.Peers[publicKey].TotalTx
 
 		// update peer's total usage
-		if config.Peers[publicKey].Name == "Al-PC" {
-			fmt.Println(config.Peers[publicKey].TotalRx,
-				config.Peers[publicKey].CurrentRx,
-				config.Peers[publicKey].TotalUsage)
-		}
 		config.Peers[publicKey].TotalUsage += config.Peers[publicKey].CurrentRx
 		_, err = config.Collection.UpdateOne(
 			context.TODO(),
