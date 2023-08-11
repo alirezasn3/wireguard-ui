@@ -181,14 +181,15 @@ func createPeer(name string, isAdmin bool) (*Peer, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	// write striped config to a file
 	err = os.WriteFile(config.Path+"/wg0.conf", configBytes, 0644)
 	if err != nil {
 		panic(err)
 	}
 
-	// hot reload
-	cmd = exec.Command("sh", config.Path+"/scripts/hot-reload.sh", config.InterfaceName)
+	// save chagnes to main config file
+	cmd = exec.Command("wg", "syncconf", config.InterfaceName, fmt.Sprintf("%s/%s.conf", config.Path, config.InterfaceName))
 	_, err = cmd.Output()
 	if err != nil {
 		return nil, err
@@ -301,27 +302,37 @@ func updatePeers() {
 		if (config.Peers[publicKey].ExpiresAt < uint64(time.Now().Unix()) ||
 			config.Peers[publicKey].TotalUsage > config.Peers[publicKey].AllowedUsage) && !config.Peers[publicKey].Suspended {
 			fmt.Println("suspending " + config.Peers[publicKey].Name)
-
 			// create invalid preshared key
 			invalid := config.Peers[publicKey].ID.Hex() + "AAAAAAAAAAAAAAAAAAA="
 
 			// replace peer's preshared key with the invalid one
-			cmd := exec.Command("sh", config.Path+"/scripts/replace-string.sh", fmt.Sprintf("/etc/wireguard/%s.conf", config.InterfaceName), config.Peers[publicKey].PublicKey, invalid)
+			cmd := exec.Command("sh", config.Path+"/scripts/replace-string.sh", fmt.Sprintf("/etc/wireguard/%s.conf", config.InterfaceName), config.Peers[publicKey].PresharedKey, invalid)
 			_, err := cmd.Output()
 			if err != nil {
 				fmt.Println(err)
 				continue
 			}
-			fmt.Println(cmd)
 
-			// hot reload
-			cmd = exec.Command("sh", config.Path+"/scripts/hot-reload.sh", config.InterfaceName)
+			// get striped config
+			cmd = exec.Command("wg-quick", "strip", "wg0")
+			configBytes, err := cmd.Output()
+			if err != nil {
+				fmt.Println(err)
+			}
+
+			// write striped config to a file
+			err = os.WriteFile(config.Path+"/wg0.conf", configBytes, 0644)
+			if err != nil {
+				fmt.Println(err)
+			}
+
+			// save chagnes to main config file
+			cmd = exec.Command("wg", "syncconf", config.InterfaceName, fmt.Sprintf("%s/%s.conf", config.Path, config.InterfaceName))
 			_, err = cmd.Output()
 			if err != nil {
 				fmt.Println(err)
 				continue
 			}
-			fmt.Println(cmd)
 
 			// update database
 			config.Peers[publicKey].Suspended = true
@@ -349,14 +360,27 @@ func updatePeers() {
 			}
 
 			// replace invalid preshared key with the correct one from database
-			cmd := exec.Command("sh", config.Path+"/scripts/replace-string.sh", fmt.Sprintf("/etc/wireguard/%s.conf", config.InterfaceName), invalid, p.PublicKey)
+			cmd := exec.Command("sh", config.Path+"/scripts/replace-string.sh", fmt.Sprintf("/etc/wireguard/%s.conf", config.InterfaceName), invalid, p.PresharedKey)
 			_, err := cmd.Output()
 			if err != nil {
 				panic(err)
 			}
 
-			// hot reload
-			cmd = exec.Command("sh", config.Path+"/scripts/hot-reload.sh", config.InterfaceName)
+			// get striped config
+			cmd = exec.Command("wg-quick", "strip", "wg0")
+			configBytes, err := cmd.Output()
+			if err != nil {
+				fmt.Println(err)
+			}
+
+			// write striped config to a file
+			err = os.WriteFile(config.Path+"/wg0.conf", configBytes, 0644)
+			if err != nil {
+				fmt.Println(err)
+			}
+
+			// save chagnes to main config file
+			cmd = exec.Command("wg", "syncconf", config.InterfaceName, fmt.Sprintf("%s/%s.conf", config.Path, config.InterfaceName))
 			_, err = cmd.Output()
 			if err != nil {
 				panic(err)
@@ -364,7 +388,7 @@ func updatePeers() {
 
 			// update database
 			config.Peers[publicKey].Suspended = false
-			_, err = config.Collection.UpdateOne(context.TODO(), bson.M{"publicKey": config.Peers[publicKey].PublicKey}, bson.M{"$set": bson.M{"suspended": false}})
+			_, err = config.Collection.UpdateOne(context.TODO(), bson.M{"publicKey": config.Peers[publicKey].PublicKey}, bson.M{"$set": bson.M{"suspended": true}})
 			if err != nil {
 				panic(err)
 			}
