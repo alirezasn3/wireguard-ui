@@ -267,19 +267,21 @@ func updatePeers() {
 			continue
 		}
 
-		// update current rx and tx
 		newTotalTx, _ = strconv.ParseUint(string(info[5]), 10, 64)
 		newTotalRx, _ = strconv.ParseUint(string(info[6]), 10, 64)
-		config.Peers[publicKey].CurrentRx = newTotalRx - config.Peers[publicKey].TotalRx
-		config.Peers[publicKey].CurrentTx = newTotalTx - config.Peers[publicKey].TotalTx
-
 		// update total rx and tx
 		config.Peers[publicKey].TotalRx = newTotalRx
 		config.Peers[publicKey].TotalTx = newTotalTx
 
+		// update current rx and tx
+		config.Peers[publicKey].CurrentRx = newTotalRx - config.Peers[publicKey].TotalRx
+		config.Peers[publicKey].CurrentTx = newTotalTx - config.Peers[publicKey].TotalTx
+
 		// update peer's total usage
 		if config.Peers[publicKey].Name == "Al-PC" {
-			fmt.Println(config.Peers[publicKey].TotalRx, config.Peers[publicKey].CurrentRx, config.Peers[publicKey].TotalUsage)
+			fmt.Println(config.Peers[publicKey].TotalRx,
+				config.Peers[publicKey].CurrentRx,
+				config.Peers[publicKey].TotalUsage)
 		}
 		config.Peers[publicKey].TotalUsage += config.Peers[publicKey].CurrentRx
 		_, err = config.Collection.UpdateOne(
