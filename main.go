@@ -518,7 +518,7 @@ func main() {
 			peer.Name = newPeer.Name
 		}
 		if newPeer.AllowedUsage != 0 {
-			peer.AllowedUsage += newPeer.AllowedUsage
+			peer.AllowedUsage = newPeer.AllowedUsage
 		}
 		_, err = config.Collection.UpdateOne(
 			context.TODO(),
