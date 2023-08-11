@@ -305,7 +305,7 @@ func updatePeers() {
 			invalid := config.Peers[publicKey].ID.Hex() + "AAAAAAAAAAAAAAAAAAA="
 
 			// replace peer's preshared key with the invalid one
-			cmd := exec.Command("sh", config.Path+"/scripts/replace-string.sh", fmt.Sprintf("/etc/wireguard/%s.conf", config.InterfaceName), config.Peers[publicKey].PresharedKey, invalid)
+			cmd := exec.Command("sh", config.Path+"/scripts/replace-string.sh", fmt.Sprintf("/etc/wireguard/%s.conf", config.InterfaceName), config.Peers[publicKey].PublicKey, invalid)
 			_, err := cmd.Output()
 			if err != nil {
 				fmt.Println(err)
@@ -348,7 +348,7 @@ func updatePeers() {
 			}
 
 			// replace invalid preshared key with the correct one from database
-			cmd := exec.Command("sh", config.Path+"/scripts/replace-string.sh", fmt.Sprintf("/etc/wireguard/%s.conf", config.InterfaceName), invalid, p.PresharedKey)
+			cmd := exec.Command("sh", config.Path+"/scripts/replace-string.sh", fmt.Sprintf("/etc/wireguard/%s.conf", config.InterfaceName), invalid, p.PublicKey)
 			_, err := cmd.Output()
 			if err != nil {
 				panic(err)
