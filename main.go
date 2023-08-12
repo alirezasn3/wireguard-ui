@@ -433,7 +433,7 @@ func findPeerByName(name string) *Peer {
 }
 
 func generateConfig(peer *Peer) string {
-	return fmt.Sprintf("[Interface]\nPrivateKey = %s\nAddress = %s\nDNS = %s\nMTU = 1384\n[Peer]\nPublicKey = %s\nPresharedKey = %s\nAllowedIPs = 0.0.0.0/0\nEndpoint = %s\n", peer.PrivateKey, peer.Address, config.DNSServers, config.ServerPublicKey, peer.PresharedKey, config.ServerEndpoint)
+	return fmt.Sprintf("[Interface]\nPrivateKey = %s\nAddress = %s\nDNS = %s\n[Peer]\nPublicKey = %s\nPresharedKey = %s\nAllowedIPs = 0.0.0.0/0\nEndpoint = %s\n", peer.PrivateKey, peer.Address, config.DNSServers, config.ServerPublicKey, peer.PresharedKey, config.ServerEndpoint)
 }
 
 func init() {
