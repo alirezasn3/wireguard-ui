@@ -16,7 +16,7 @@
 	};
 	let sortBy = 'expiry';
 	let sortOrder = -1;
-	let serch = '';
+	let currentGroup = '';
 	let currentPeer: Peer | null = null;
 	let view = 'peers';
 	let showCreatPeer = false;
@@ -33,7 +33,7 @@
 
 	$: {
 		peers = peers
-			.filter((p) => p.name.toLowerCase().includes(''))
+			.filter((p) => p.name.toLowerCase().startsWith(currentGroup))
 			.sort((a, b) => {
 				if (sortBy === 'expiry') return sortOrder * (a.expiresAt >= b.expiresAt ? -1 : 1);
 				if (sortBy === 'usage') return sortOrder * (a.totalUsage >= b.totalUsage ? -1 : 1);
@@ -56,9 +56,7 @@
 				currentPeer = await res.json();
 			}
 		} else {
-			const res = await fetch(
-				import.meta.env.MODE === 'development' ? 'http://my.stats:5051/api/stats' : '/api/stats'
-			);
+			const res = await fetch('/api/stats');
 			if (res.status === 200) {
 				const data = await res.json();
 				peers = Object.values(data.peers as Peer[]);
@@ -229,7 +227,6 @@
 	{/if}
 
 	{#if peers.length}
-		{#if view === 'peers'}
 			<div class="overflow-y-auto md:m-4">
 				<table
 					class="w-full table-auto break-keep bg-slate-900 text-left max-md:text-xs md:rounded-lg"
@@ -325,9 +322,6 @@
 					</tbody>
 				</table>
 			</div>
-		{:else}
-			<div />
-		{/if}
 	{:else}
 		<div class="flex h-[calc(100vh-64px)] w-full items-center justify-center text-lg font-bold">
 			Loading...
