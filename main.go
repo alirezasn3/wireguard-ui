@@ -256,7 +256,6 @@ func updatePeers() {
 	peerLines := strings.Split(strings.TrimSpace(string(bytes)), "\n")[1:]
 
 	var operations []mongo.WriteModel
-	operation := mongo.NewUpdateOneModel()
 	var publicKey string
 	var newTotalTx uint64
 	var newTotalRx uint64
@@ -283,7 +282,7 @@ func updatePeers() {
 
 		// update peer's total usage
 		config.Peers[publicKey].TotalUsage += config.Peers[publicKey].CurrentRx
-		fmt.Println(config.Peers[publicKey].TotalUsage)
+		operation := mongo.NewUpdateOneModel()
 		operation.SetFilter(bson.M{"publicKey": publicKey})
 		operation.SetUpdate(bson.M{"$set": bson.M{"totalUsage": config.Peers[publicKey].TotalUsage}})
 		operations = append(operations, operation)
