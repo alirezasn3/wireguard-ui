@@ -283,6 +283,7 @@ func updatePeers() {
 
 		// update peer's total usage
 		config.Peers[publicKey].TotalUsage += config.Peers[publicKey].CurrentRx
+		fmt.Println(config.Peers[publicKey].TotalUsage)
 		operation.SetFilter(bson.M{"publicKey": publicKey})
 		operation.SetUpdate(bson.M{"$set": bson.M{"totalUsage": config.Peers[publicKey].TotalUsage}})
 		operations = append(operations, operation)
