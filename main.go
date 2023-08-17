@@ -399,12 +399,10 @@ func updatePeers() {
 	config.CurrentRx = currentRx
 	config.CurrentTx = currentTx
 
-	fmt.Println(operation.Filter, operation.Update)
-	r, err := config.Collection.BulkWrite(context.TODO(), operations, &options.BulkWriteOptions{})
+	_, err = config.Collection.BulkWrite(context.TODO(), operations, &options.BulkWriteOptions{})
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(r.MatchedCount, r.ModifiedCount, r.UpsertedCount)
 }
 
 func findPeerByIp(ip string) *Peer {
