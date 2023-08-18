@@ -477,12 +477,8 @@ func init() {
 		fmt.Println("Created new peer in /root/configs/Admin-0.conf\nUse it to connect Wireguard UI admin panel.")
 	}
 
-	// store TotalUsage in a map
-	totalUsagesTable := make(map[string]uint64)
-
 	for i, p := range data {
 		config.Peers[p.PublicKey] = &data[i]
-		totalUsagesTable[p.PublicKey] = p.TotalUsage
 	}
 
 	// get peers info from wg
@@ -514,38 +510,6 @@ func init() {
 		config.Peers[publicKey].TotalRx = newTotalRx
 		config.Peers[publicKey].TotalTx = newTotalTx
 	}
-
-	time.Sleep(time.Second)
-
-	for _, p := range peerLines {
-		info := strings.Split(p, "\t")
-
-		// find public key
-		publicKey = info[0]
-
-		if config.Peers[publicKey] == nil {
-			continue
-		}
-
-		newTotalTx, _ = strconv.ParseUint(string(info[5]), 10, 64)
-		newTotalRx, _ = strconv.ParseUint(string(info[6]), 10, 64)
-
-		// update current rx and tx
-		config.Peers[publicKey].CurrentRx = newTotalRx - config.Peers[publicKey].TotalRx
-		config.Peers[publicKey].CurrentTx = newTotalTx - config.Peers[publicKey].TotalTx
-
-		// update total rx and tx
-		config.Peers[publicKey].TotalRx = newTotalRx
-		config.Peers[publicKey].TotalTx = newTotalTx
-
-		// update peer's total usage
-		config.Peers[publicKey].TotalUsage += config.Peers[publicKey].CurrentRx
-
-		// add previous usages
-		config.Peers[publicKey].TotalUsage += totalUsagesTable[publicKey]
-	}
-
-	time.Sleep(time.Second)
 }
 
 func main() {
