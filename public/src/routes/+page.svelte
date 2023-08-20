@@ -217,6 +217,7 @@
 				on:click={() => {
 					newName = '';
 					showCreatPeer = true;
+					document.body.style.overflowY = 'hidden';
 				}}
 				class="fixed bottom-6 right-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-700 text-lg font-bold hover:cursor-pointer hover:bg-teal-600"
 			>
@@ -227,45 +228,45 @@
 	{/if}
 
 	{#if peers.length}
-			<div class="overflow-y-auto md:m-4">
-				<table
-					class="w-full table-auto break-keep bg-slate-900 text-left max-md:text-xs md:rounded-lg"
-				>
-					<thead class="border-b-2 border-slate-800">
-						<tr class="select-none">
-							<th class="p-2 {!dashboardInfo.isAdmin&& "hidden"}">#</th>
-							<th
-								on:click={() => {
-									sortBy = 'name';
-								}}
-								class="p-2 hover:cursor-pointer hover:underline {sortBy === 'name' &&
-									'bg-gray-950 font-black'}">Name</th
-							>
-							<th
-								on:click={() => {
-									if (sortBy == 'expiry') {
-										if (sortOrder < 0) sortOrder = 1;
-										else sortOrder = -1;
-									}
-									sortBy = 'expiry';
-								}}
-								class="p-2 hover:cursor-pointer hover:underline {sortBy === 'expiry' &&
-									'bg-gray-950 font-black'}">Expiry</th
-							>
-							<th
-								on:click={() => {
-									if (sortBy == 'bandwidth') {
-										if (sortOrder < 0) sortOrder = 1;
-										else sortOrder = -1;
-									}
-									sortBy = 'bandwidth';
-								}}
-								class="p-2 hover:cursor-pointer hover:underline {sortBy === 'bandwidth' &&
-									'bg-gray-950 font-black'} {!dashboardInfo.isAdmin&& "hidden"}">Bandwidth</th
-							>
-							{#if dashboardInfo.isAdmin}
-							<th
+		<div class="overflow-y-auto md:m-4">
+			<table
+				class="w-full table-auto break-keep bg-slate-900 text-left max-md:text-xs md:rounded-lg"
+			>
+				<thead class="border-b-2 border-slate-800">
+					<tr class="select-none">
+						<th class="p-2 {!dashboardInfo.isAdmin && 'hidden'}">#</th>
+						<th
 							on:click={() => {
+								sortBy = 'name';
+							}}
+							class="p-2 hover:cursor-pointer hover:underline {sortBy === 'name' &&
+								'bg-gray-950 font-black'}">Name</th
+						>
+						<th
+							on:click={() => {
+								if (sortBy == 'expiry') {
+									if (sortOrder < 0) sortOrder = 1;
+									else sortOrder = -1;
+								}
+								sortBy = 'expiry';
+							}}
+							class="p-2 hover:cursor-pointer hover:underline {sortBy === 'expiry' &&
+								'bg-gray-950 font-black'}">Expiry</th
+						>
+						<th
+							on:click={() => {
+								if (sortBy == 'bandwidth') {
+									if (sortOrder < 0) sortOrder = 1;
+									else sortOrder = -1;
+								}
+								sortBy = 'bandwidth';
+							}}
+							class="p-2 hover:cursor-pointer hover:underline {sortBy === 'bandwidth' &&
+								'bg-gray-950 font-black'} {!dashboardInfo.isAdmin && 'hidden'}">Bandwidth</th
+						>
+						{#if dashboardInfo.isAdmin}
+							<th
+								on:click={() => {
 									if (sortBy == 'usage') {
 										if (sortOrder < 0) sortOrder = 1;
 										else sortOrder = -1;
@@ -275,53 +276,63 @@
 								class="p-2 hover:cursor-pointer hover:underline {sortBy === 'usage' &&
 									'bg-gray-950 font-black'}"
 							>
-							Usage</th
+								Usage</th
 							>
 							<th class="p-2">Allowed Usage</th>
+						{:else}
+							<th class="p-2">Usage</th>
+						{/if}
+					</tr>
+				</thead>
+				<tbody
+					class="hover:cursor-pointer [&>*:nth-child(even)]:border-y-[1px] [&>*:nth-child(even)]:border-slate-800"
+				>
+					{#each peers as peer, i}
+						<tr
+							on:click={() => {
+								currentPeer = peer;
+								document.body.style.overflowY = 'hidden';
+							}}
+							class="hover:bg-slate-800"
+						>
+							<td class="px-2 py-1 max-md:py-2 {!dashboardInfo.isAdmin && 'hidden'}">{i + 1}</td>
+							<td class="px-2 py-1 max-md:py-2 {sortBy === 'name' && 'bg-gray-950 font-black'}"
+								>{peer.name}</td
+							>
+							<td
+								class="px-2 py-1 max-md:py-2 {sortBy === 'expiry' &&
+									'bg-gray-950 font-black'} {Math.trunc(peer.expiresAt - Date.now() / 1000) < 0 &&
+									'text-red-500'}"
+							>
+								{formatSeconds(peer.expiresAt)}
+							</td>
+							<td
+								class="px-2 py-1 max-md:py-2 {sortBy === 'bandwidth' &&
+									'bg-gray-950 font-black'} {!dashboardInfo.isAdmin && 'hidden'}"
+								>{formatBytes(peer.currentRx)}</td
+							>
+							{#if dashboardInfo.isAdmin}
+								<td
+									class="px-2 py-1 max-md:py-2 {sortBy === 'usage' &&
+										'bg-gray-950 font-black'} {peer.totalUsage >= peer.allowedUsage &&
+										'text-red-500'}">{formatBytes(peer.totalUsage)}</td
+								>
+								<td
+									class="px-2 py-1 max-md:py-2 {peer.totalUsage >= peer.allowedUsage &&
+										'text-red-500'}">{formatBytes(peer.allowedUsage)}</td
+								>
 							{:else}
-								<th class="p-2">Usage</th>
+								<td
+									class="px-2 py-1 max-md:py-2 {peer.totalUsage >= peer.allowedUsage &&
+										'text-red-500'}"
+									>{formatBytes(peer.totalUsage)} / {formatBytes(peer.allowedUsage)}</td
+								>
 							{/if}
 						</tr>
-					</thead>
-					<tbody
-						class="hover:cursor-pointer [&>*:nth-child(even)]:border-y-[1px] [&>*:nth-child(even)]:border-slate-800"
-					>
-						{#each peers as peer, i}
-							<tr
-								on:click={() => {
-									currentPeer = peer;
-									document.body.style.overflowY = 'hidden';
-								}}
-								class="hover:bg-slate-800"
-							>
-								<td class="px-2 py-1 max-md:py-2 {!dashboardInfo.isAdmin&& "hidden"}">{i + 1}</td>
-								<td class="px-2 py-1 max-md:py-2 {sortBy === 'name' && 'bg-gray-950 font-black'}"
-									>{peer.name}</td
-								>
-								<td class="px-2 py-1 max-md:py-2 {sortBy === 'expiry' && 'bg-gray-950 font-black'} {Math.trunc(peer.expiresAt - Date.now() / 1000) < 0 &&
-									'text-red-500'}">
-									{formatSeconds(peer.expiresAt)}
-								</td>
-								<td
-									class="px-2 py-1 max-md:py-2 {sortBy === 'bandwidth' && 'bg-gray-950 font-black'} {!dashboardInfo.isAdmin&& "hidden"}"
-									>{formatBytes(peer.currentRx)}</td
-								>
-								{#if dashboardInfo.isAdmin}
-								<td class="px-2 py-1 max-md:py-2 {sortBy === 'usage' && 'bg-gray-950 font-black'} { peer.totalUsage >= peer.allowedUsage &&
-									'text-red-500'}"
-								>{formatBytes(peer.totalUsage)}</td
-								>
-								<td class="px-2 py-1 max-md:py-2 { peer.totalUsage >= peer.allowedUsage &&
-									'text-red-500'}">{formatBytes(peer.allowedUsage)}</td>
-								{:else}
-								<td class="px-2 py-1 max-md:py-2 { peer.totalUsage >= peer.allowedUsage &&
-									'text-red-500'}">{formatBytes(peer.totalUsage)} / {formatBytes(peer.allowedUsage)}</td>
-								{/if}
-							</tr>
-						{/each}
-					</tbody>
-				</table>
-			</div>
+					{/each}
+				</tbody>
+			</table>
+		</div>
 	{:else}
 		<div class="flex h-[calc(100vh-64px)] w-full items-center justify-center text-lg font-bold">
 			Loading...
@@ -407,11 +418,11 @@
 					{:else}
 						<div class="mb-2 flex justify-end break-keep border-slate-700 max-md:text-sm">
 							{#if dashboardInfo.isAdmin}
-							<button
-								on:click={() => deletePeer(currentPeer?.name || '')}
-								class="ml-2 rounded-full p-2 bg-red-500 font-bold max-md:text-sm"
-								><img class="h-6 w-6 invert" src="/delete.png" alt="delete" /></button
-							>
+								<button
+									on:click={() => deletePeer(currentPeer?.name || '')}
+									class="ml-2 rounded-full bg-red-500 p-2 font-bold max-md:text-sm"
+									><img class="h-6 w-6 invert" src="/delete.png" alt="delete" /></button
+								>
 								<button
 									on:click={() => {
 										if (currentPeer) {
@@ -425,12 +436,12 @@
 										}
 										editingCurrentPeer = true;
 									}}
-									class="ml-2 rounded-full p-2 bg-orange-500 font-bold max-md:text-sm"
+									class="ml-2 rounded-full bg-orange-500 p-2 font-bold max-md:text-sm"
 									><img class="h-6 w-6 invert" src="/edit.png" alt="edit" /></button
 								>
 								<button
 									on:click={() => resetPeerUsage(currentPeer?.name || '')}
-									class="ml-2 rounded-full p-2 bg-orange-500 font-bold max-md:text-sm"
+									class="ml-2 rounded-full bg-orange-500 p-2 font-bold max-md:text-sm"
 									><img class="h-6 w-6 invert" src="/reset.png" alt="reset" /></button
 								>
 							{/if}
@@ -440,7 +451,7 @@
 									qr.toCanvas(document.getElementById('qr-canvas'), config);
 									showQR = true;
 								}}
-								class="ml-2 rounded-full p-2 bg-green-500 font-bold max-md:text-sm"
+								class="ml-2 rounded-full bg-green-500 p-2 font-bold max-md:text-sm"
 								><img class="h-6 w-6 invert" src="/qr.png" alt="qrcode" /></button
 							>
 							<button
@@ -452,7 +463,7 @@
 									a.download = currentPeer?.name.replaceAll('-', '') + '.conf';
 									a.click();
 								}}
-								class="ml-2 rounded-full p-2 bg-green-500 font-bold max-md:text-sm"
+								class="ml-2 rounded-full bg-green-500 p-2 font-bold max-md:text-sm"
 								><img class="h-6 w-6 invert" src="download.png" alt="download" /></button
 							>
 						</div>
@@ -462,7 +473,7 @@
 						{#if resetPeerUsageError}
 							<div class="mb-2 text-red-500">{resetPeerUsageError}</div>
 						{/if}
-						<div class="mb-2 {!dashboardInfo.isAdmin && "hidden"}">
+						<div class="mb-2 {!dashboardInfo.isAdmin && 'hidden'}">
 							<div class="font-bold">Address:</div>
 							<div class="ml-4 text-sm text-slate-300">{currentPeer.address}</div>
 						</div>
@@ -472,7 +483,7 @@
 								{formatBytes(currentPeer.totalUsage)} / {formatBytes(currentPeer.allowedUsage)}
 							</div>
 						</div>
-						<div class="mb-2 {!dashboardInfo.isAdmin && "hidden"}">
+						<div class="mb-2 {!dashboardInfo.isAdmin && 'hidden'}">
 							<div class="font-bold">Bandwidth:</div>
 							<div class="">
 								<div class="ml-4 text-sm text-slate-300">
