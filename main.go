@@ -159,7 +159,7 @@ func createPeer(name string, isAdmin bool) (*Peer, error) {
 		PresharedKey: presharedKey,
 		Address:      a.ToString() + "/32",
 		ExpiresAt:    uint64(time.Now().Unix() + 60*60*24*30),
-		AllowedUsage: 100000000 * 1024,
+		AllowedUsage: 75 * 1024000000,
 		IsAdmin:      isAdmin,
 	}
 
