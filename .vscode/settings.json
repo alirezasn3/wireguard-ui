@@ -22,7 +22,7 @@
     "**/app.html": true,
     "**/app.css": true,
     "public/.gitignore": true,
-    "**/package.json": true,
+    // "**/package.json": true,
     "**/static": true
   }
 }
