@@ -30,10 +30,11 @@
 	let updatePeerError = '';
 	let deletePeerError = '';
 	let resetPeerUsageError = '';
+	let search = '';
 
 	$: {
 		peers = peers
-			.filter((p) => p.name.toLowerCase().startsWith(currentGroup))
+			.filter((p) => p.name.toLowerCase().includes(search))
 			.sort((a, b) => {
 				if (sortBy === 'expiry') return sortOrder * (a.expiresAt >= b.expiresAt ? -1 : 1);
 				if (sortBy === 'usage') return sortOrder * (a.totalUsage >= b.totalUsage ? -1 : 1);
@@ -225,6 +226,13 @@
 				<span class="absolute h-1 w-6 rotate-90 bg-white" />
 			</button>
 		{/if}
+		<div class="w-full px-4">
+			<input
+				type="text"
+				class="w-full rounded px-4 py-2 text-lg font-bold text-slate-50 text-slate-950"
+				bind:value={search}
+			/>
+		</div>
 	{/if}
 
 	{#if peers.length}
