@@ -226,10 +226,10 @@
 				<span class="absolute h-1 w-6 rotate-90 bg-white" />
 			</button>
 		{/if}
-		<div class="w-full px-4">
+		<div class="w-full px-4 md:mb-8">
 			<input
 				type="text"
-				class="w-full rounded px-4 py-2 text-lg font-bold text-slate-50 text-slate-950"
+				class="w-full rounded px-2 py-1 font-bold text-slate-50 text-slate-950"
 				bind:value={search}
 			/>
 		</div>
