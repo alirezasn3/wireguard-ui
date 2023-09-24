@@ -418,7 +418,7 @@ func findPeerByIp(ip string) *Peer {
 
 func findPeerByName(name string) *Peer {
 	for _, p := range config.Peers {
-		if strings.Contains(p.Name, name) {
+		if p.Name == name {
 			return p
 		}
 	}
