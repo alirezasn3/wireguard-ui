@@ -108,7 +108,7 @@ func createPeer(name string, isAdmin bool) (*Peer, error) {
 
 	// find unused network address for peer
 	var a IPAddress
-	a.Parse(config.ServerNetworkAddress)
+	a.Parse(strings.Split(config.ServerNetworkAddress, "/")[0])
 	a.Increment()
 	cmd := exec.Command("wg-quick", "strip", config.InterfaceName)
 	allPeersBytes, err := cmd.Output()
@@ -116,7 +116,7 @@ func createPeer(name string, isAdmin bool) (*Peer, error) {
 		return nil, err
 	}
 	allPeers := string(allPeersBytes)
-	for strings.Contains(allPeers, a.ToString()) {
+	for strings.Contains(allPeers, a.ToString()+"/"+strings.Split(config.ServerNetworkAddress, "/")[1]) {
 		a.Increment()
 	}
 
@@ -157,7 +157,7 @@ func createPeer(name string, isAdmin bool) (*Peer, error) {
 		PublicKey:    clientPublicKey,
 		PrivateKey:   clientPrivateKey,
 		PresharedKey: presharedKey,
-		Address:      a.ToString() + "/32",
+		Address:      a.ToString() + "/" + strings.Split(config.ServerNetworkAddress, "/")[1],
 		ExpiresAt:    uint64(time.Now().Unix() + 60*60*24*30),
 		AllowedUsage: 50 * 1024000000,
 		IsAdmin:      isAdmin,
@@ -168,7 +168,7 @@ func createPeer(name string, isAdmin bool) (*Peer, error) {
 	if err != nil {
 		return nil, err
 	}
-	if _, err := f.Write([]byte(fmt.Sprintf("\n[Peer]\nPublicKey = %s\nPresharedKey = %s\nAllowedIPs = %s\n", clientPublicKey, presharedKey, a.ToString()+"/32"))); err != nil {
+	if _, err := f.Write([]byte(fmt.Sprintf("\n[Peer]\nPublicKey = %s\nPresharedKey = %s\nAllowedIPs = %s/%s\n", clientPublicKey, presharedKey, a.ToString(), strings.Split(config.ServerNetworkAddress, "/")[1]))); err != nil {
 		return nil, err
 	}
 	if err := f.Close(); err != nil {
