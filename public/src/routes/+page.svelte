@@ -226,7 +226,7 @@
 				<span class="absolute h-1 w-6 rotate-90 bg-white" />
 			</button>
 		{/if}
-		<div class="w-full px-4 max-md:mb-8">
+		<div class="w-full px-4">
 			<input
 				type="text"
 				class="w-full rounded px-2 py-1 font-bold text-slate-50 text-slate-950"
@@ -236,7 +236,7 @@
 	{/if}
 
 	{#if peers.length}
-		<div class="overflow-y-auto md:m-4">
+		<div class="overflow-y-auto m-4">
 			<table
 				class="w-full table-auto break-keep bg-slate-900 text-left max-md:text-xs md:rounded-lg"
 			>
