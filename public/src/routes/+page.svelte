@@ -29,18 +29,21 @@
 	let search = '';
 
 	$: {
-		peers = peers
-			.filter((p) => p.name.toLowerCase().includes(search.toLocaleLowerCase()))
-			.sort((a, b) => {
-				if (sortBy === 'expiry') return sortOrder * (a.expiresAt >= b.expiresAt ? -1 : 1);
-				if (sortBy === 'usage') return sortOrder * (a.totalUsage >= b.totalUsage ? -1 : 1);
-				if (sortBy === 'name') return a.name.localeCompare(b.name);
-				return sortOrder * (a.currentRx >= b.currentRx ? -1 : 1);
-			});
-		for (let i = 0; i < peers.length; i++) {
-			const groupName = peers[i].name.split('-')[0];
-			if (groups[groupName]) groups[groupName].push(peers[i]);
-			else groups[groupName] = [peers[i]];
+		if (view === 'peers') {
+			peers = peers
+				.filter((p) => p.name.toLowerCase().includes(search.toLocaleLowerCase()))
+				.sort((a, b) => {
+					if (sortBy === 'expiry') return sortOrder * (a.expiresAt >= b.expiresAt ? -1 : 1);
+					if (sortBy === 'usage') return sortOrder * (a.totalUsage >= b.totalUsage ? -1 : 1);
+					if (sortBy === 'name') return a.name.localeCompare(b.name);
+					return sortOrder * (a.currentRx >= b.currentRx ? -1 : 1);
+				});
+		} else {
+			for (let i = 0; i < peers.length; i++) {
+				const groupName = peers[i].name.split('-')[0];
+				if (groups[groupName]) groups[groupName].push(peers[i]);
+				else groups[groupName] = [peers[i]];
+			}
 		}
 	}
 
