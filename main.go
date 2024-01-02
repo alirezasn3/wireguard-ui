@@ -30,10 +30,6 @@ type Config struct {
 	InterfaceName        string `json:"interfaceName"`
 	Collection           *mongo.Collection
 	Peers                map[string]*Peer
-	TotalRx              uint64
-	TotalTx              uint64
-	CurrentRx            uint64
-	CurrentTx            uint64
 	ServerEndpoint       string `json:"serverEndpoint"`
 	ServerPublicKey      string `json:"serverPublicKey"`
 	ServerNetworkAddress string `json:"serverNetworkAddress"`
@@ -246,12 +242,6 @@ func updatePeers() {
 		return
 	}
 
-	// define temp vars
-	var totalRx uint64
-	var totalTx uint64
-	var currentRx uint64
-	var currentTx uint64
-
 	// each line contains a peer's info, excluding the first line whichis the interface info
 	peerLines := strings.Split(strings.TrimSpace(string(bytes)), "\n")[1:]
 
@@ -289,12 +279,6 @@ func updatePeers() {
 
 		// update latest handshake
 		config.Peers[publicKey].LatestHandshake, _ = strconv.ParseUint(string(info[4]), 10, 64)
-
-		// update servers total and current rx and tx
-		totalRx += config.Peers[publicKey].TotalRx
-		totalTx += config.Peers[publicKey].TotalTx
-		currentRx += config.Peers[publicKey].CurrentRx
-		currentTx += config.Peers[publicKey].CurrentTx
 
 		// suspend expired peers
 		if (config.Peers[publicKey].ExpiresAt < uint64(time.Now().Unix()) ||
@@ -392,12 +376,6 @@ func updatePeers() {
 			}
 		}
 	}
-
-	// set servers total and current rx and tx
-	config.TotalRx = totalRx
-	config.TotalTx = totalTx
-	config.CurrentRx = currentRx
-	config.CurrentTx = currentTx
 
 	_, err = config.Collection.BulkWrite(context.TODO(), operations, &options.BulkWriteOptions{})
 	if err != nil {
@@ -549,10 +527,6 @@ func main() {
 		}
 		data := make(map[string]interface{})
 		data["peers"] = tempPeers
-		data["totalRx"] = config.TotalRx
-		data["totalTx"] = config.TotalTx
-		data["currentRx"] = config.CurrentRx
-		data["currentTx"] = config.CurrentTx
 		data["isAdmin"] = peer.IsAdmin
 		data["name"] = peer.Name
 		c.JSON(200, data)

@@ -1,10 +1,6 @@
 export interface DashboardInfo {
 	name: string;
 	isAdmin: boolean;
-	totalRx: number;
-	totalTx: number;
-	currentRx: number;
-	currentTx: number;
 }
 
 export interface Peer {

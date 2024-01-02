@@ -8,11 +8,7 @@
 	let groups: { [key: string]: Peer[] } = {};
 	let dashboardInfo: DashboardInfo = {
 		name: '',
-		isAdmin: false,
-		totalRx: 0,
-		totalTx: 0,
-		currentRx: 0,
-		currentTx: 0
+		isAdmin: false
 	};
 	let sortBy = 'expiry';
 	let sortOrder = -1;
@@ -34,7 +30,7 @@
 
 	$: {
 		peers = peers
-			.filter((p) => p.name.toLowerCase().includes(search))
+			.filter((p) => p.name.toLowerCase().includes(search.toLocaleLowerCase()))
 			.sort((a, b) => {
 				if (sortBy === 'expiry') return sortOrder * (a.expiresAt >= b.expiresAt ? -1 : 1);
 				if (sortBy === 'usage') return sortOrder * (a.totalUsage >= b.totalUsage ? -1 : 1);
@@ -63,11 +59,7 @@
 				peers = Object.values(data.peers as Peer[]);
 				dashboardInfo = {
 					name: data.name,
-					isAdmin: data.isAdmin,
-					totalRx: data.totalRx,
-					totalTx: data.totalTx,
-					currentRx: data.currentRx,
-					currentTx: data.currentTx
+					isAdmin: data.isAdmin
 				};
 			}
 		}
@@ -193,23 +185,11 @@
 	class="fixed left-0 top-0 flex h-16 w-full items-center justify-between border-b-2 border-slate-900 bg-slate-950 p-4 text-lg font-bold"
 >
 	<span>Wireguard UI</span>
-	<span>{dashboardInfo.name}</span>
+	<span class="text-sm">{dashboardInfo.name}</span>
 </nav>
 <div class="mt-16">
 	{#if dashboardInfo.isAdmin}
-		<div class="mx-4 mt-16 border-b-2 border-slate-900 p-4 font-bold max-md:px-0 max-md:text-sm">
-			<div class="flex items-center">
-				<div>&#8595; {formatBytes(dashboardInfo.currentRx)}/S</div>
-				<div class="mx-3 h-1.5 w-1.5 rounded-full bg-slate-700" />
-				<div>{formatBytes(dashboardInfo.totalRx)}</div>
-			</div>
-			<div class="flex items-center">
-				<div>&#8593; {formatBytes(dashboardInfo.currentTx)}/S</div>
-				<div class="mx-3 h-1.5 w-1.5 rounded-full bg-slate-700" />
-				<div>{formatBytes(dashboardInfo.totalTx)}</div>
-			</div>
-		</div>
-		<div class="mx-8 my-4 flex items-center justify-between max-md:mx-4 max-md:text-sm">
+		<div class="mx-8 my-4 flex items-center max-md:mx-4 max-md:text-sm">
 			<div>{peers.length} Peers</div>
 			<div>{Object.keys(groups).length} Groups</div>
 		</div>
@@ -228,122 +208,136 @@
 		{/if}
 		<div class="w-full px-4">
 			<input
+				placeholder="search peers"
 				type="text"
 				class="w-full rounded px-2 py-1 font-bold text-slate-50 text-slate-950"
 				bind:value={search}
 			/>
 		</div>
+		<button
+			class="px-2 py-1 text-lg font-bold"
+			on:click={() => {
+				if (view === 'peers') view = 'groups';
+				else view = 'peers';
+			}}>Show {view === 'peers' ? 'groups' : 'peers'}</button
+		>
 	{/if}
 
 	{#if peers.length}
-		<div class="overflow-y-auto m-4">
-			<table
-				class="w-full table-auto break-keep bg-slate-900 text-left max-md:text-xs md:rounded-lg"
-			>
-				<thead class="border-b-2 border-slate-800">
-					<tr class="select-none">
-						<th class="p-2 {!dashboardInfo.isAdmin && 'hidden'}">#</th>
-						<th
-							on:click={() => {
-								sortBy = 'name';
-							}}
-							class="p-2 hover:cursor-pointer hover:underline {sortBy === 'name' &&
-								'bg-gray-950 font-black'}">Name</th
-						>
-						<th
-							on:click={() => {
-								if (sortBy == 'expiry') {
-									if (sortOrder < 0) sortOrder = 1;
-									else sortOrder = -1;
-								}
-								sortBy = 'expiry';
-							}}
-							class="p-2 hover:cursor-pointer hover:underline {sortBy === 'expiry' &&
-								'bg-gray-950 font-black'}">Expiry</th
-						>
-						<th
-							on:click={() => {
-								if (sortBy == 'bandwidth') {
-									if (sortOrder < 0) sortOrder = 1;
-									else sortOrder = -1;
-								}
-								sortBy = 'bandwidth';
-							}}
-							class="p-2 hover:cursor-pointer hover:underline {sortBy === 'bandwidth' &&
-								'bg-gray-950 font-black'} {!dashboardInfo.isAdmin && 'hidden'}">Bandwidth</th
-						>
-						{#if dashboardInfo.isAdmin}
+		<div class="m-4 overflow-y-auto">
+			{#if view === 'peers'}
+				<table
+					class="w-full table-auto break-keep bg-slate-900 text-left max-md:text-xs md:rounded-lg"
+				>
+					<thead class="border-b-2 border-slate-800">
+						<tr class="select-none">
+							<th class="p-2 {!dashboardInfo.isAdmin && 'hidden'}">#</th>
 							<th
 								on:click={() => {
-									if (sortBy == 'usage') {
+									sortBy = 'name';
+								}}
+								class="p-2 hover:cursor-pointer hover:underline {sortBy === 'name' &&
+									'bg-gray-950 font-black'}">Name</th
+							>
+							<th
+								on:click={() => {
+									if (sortBy == 'expiry') {
 										if (sortOrder < 0) sortOrder = 1;
 										else sortOrder = -1;
 									}
-									sortBy = 'usage';
+									sortBy = 'expiry';
 								}}
-								class="p-2 hover:cursor-pointer hover:underline {sortBy === 'usage' &&
-									'bg-gray-950 font-black'}"
+								class="p-2 hover:cursor-pointer hover:underline {sortBy === 'expiry' &&
+									'bg-gray-950 font-black'}">Expiry</th
 							>
-								Usage</th
-							>
-							<th class="p-2">Allowed Usage</th>
-						{:else}
-							<th class="p-2">Usage</th>
-						{/if}
-					</tr>
-				</thead>
-				<tbody
-					class="hover:cursor-pointer [&>*:nth-child(even)]:border-y-[1px] [&>*:nth-child(even)]:border-slate-800"
-				>
-					{#each peers as peer, i}
-						<tr
-							on:click={() => {
-								currentPeer = peer;
-								document.body.style.overflowY = 'hidden';
-							}}
-							class="hover:bg-slate-800"
-						>
-							<td class="px-2 py-1 max-md:py-2 {!dashboardInfo.isAdmin && 'hidden'}">{i + 1}</td>
-							<td class="px-2 py-1 max-md:py-2 {sortBy === 'name' && 'bg-gray-950 font-black'}"
-								>{peer.name}</td
-							>
-							<td
-								class="px-2 py-1 max-md:py-2 {sortBy === 'expiry' &&
-									'bg-gray-950 font-black'} {Math.trunc(peer.expiresAt - Date.now() / 1000) < 0 &&
-									'text-red-500'}"
-							>
-								{formatSeconds(peer.expiresAt)}
-							</td>
-							<td
-								class="px-2 py-1 max-md:py-2 {sortBy === 'bandwidth' &&
-									'bg-gray-950 font-black'} {!dashboardInfo.isAdmin && 'hidden'}"
-								>{formatBytes(peer.currentRx)}</td
+							<th
+								on:click={() => {
+									if (sortBy == 'bandwidth') {
+										if (sortOrder < 0) sortOrder = 1;
+										else sortOrder = -1;
+									}
+									sortBy = 'bandwidth';
+								}}
+								class="p-2 hover:cursor-pointer hover:underline {sortBy === 'bandwidth' &&
+									'bg-gray-950 font-black'} {!dashboardInfo.isAdmin && 'hidden'}">Bandwidth</th
 							>
 							{#if dashboardInfo.isAdmin}
-								<td
-									class="px-2 py-1 max-md:py-2 {sortBy === 'usage' &&
-										'bg-gray-950 font-black'} {peer.totalUsage >= peer.allowedUsage &&
-										'text-red-500'}">{formatBytes(peer.totalUsage)}</td
+								<th
+									on:click={() => {
+										if (sortBy == 'usage') {
+											if (sortOrder < 0) sortOrder = 1;
+											else sortOrder = -1;
+										}
+										sortBy = 'usage';
+									}}
+									class="p-2 hover:cursor-pointer hover:underline {sortBy === 'usage' &&
+										'bg-gray-950 font-black'}"
 								>
-								<td
-									class="px-2 py-1 max-md:py-2 {peer.totalUsage >= peer.allowedUsage &&
-										'text-red-500'}">{formatBytes(peer.allowedUsage)}</td
+									Usage</th
 								>
+								<th class="p-2">Allowed Usage</th>
 							{:else}
-								<td
-									class="px-2 py-1 max-md:py-2 {peer.totalUsage >= peer.allowedUsage &&
-										'text-red-500'}"
-									>{formatBytes(peer.totalUsage)} / {formatBytes(peer.allowedUsage)}</td
-								>
+								<th class="p-2">Usage</th>
 							{/if}
 						</tr>
-					{/each}
-				</tbody>
-			</table>
-		</div>
-	{:else}
-		<div class="flex h-[calc(100vh-64px)] w-full items-center justify-center text-lg font-bold">
-			Loading...
+					</thead>
+					<tbody
+						class="hover:cursor-pointer [&>*:nth-child(even)]:border-y-[1px] [&>*:nth-child(even)]:border-slate-800"
+					>
+						{#each peers as peer, i}
+							<tr
+								on:click={() => {
+									currentPeer = peer;
+									document.body.style.overflowY = 'hidden';
+								}}
+								class="hover:bg-slate-800"
+							>
+								<td class="px-2 py-1 max-md:py-2 {!dashboardInfo.isAdmin && 'hidden'}">{i + 1}</td>
+								<td class="px-2 py-1 max-md:py-2 {sortBy === 'name' && 'bg-gray-950 font-black'}"
+									>{peer.name}</td
+								>
+								<td
+									class="px-2 py-1 max-md:py-2 {sortBy === 'expiry' &&
+										'bg-gray-950 font-black'} {Math.trunc(peer.expiresAt - Date.now() / 1000) < 0 &&
+										'text-red-500'}"
+								>
+									{formatSeconds(peer.expiresAt)}
+								</td>
+								<td
+									class="px-2 py-1 max-md:py-2 {sortBy === 'bandwidth' &&
+										'bg-gray-950 font-black'} {!dashboardInfo.isAdmin && 'hidden'}"
+									>{formatBytes(peer.currentRx)}</td
+								>
+								{#if dashboardInfo.isAdmin}
+									<td
+										class="px-2 py-1 max-md:py-2 {sortBy === 'usage' &&
+											'bg-gray-950 font-black'} {peer.totalUsage >= peer.allowedUsage &&
+											'text-red-500'}">{formatBytes(peer.totalUsage)}</td
+									>
+									<td
+										class="px-2 py-1 max-md:py-2 {peer.totalUsage >= peer.allowedUsage &&
+											'text-red-500'}">{formatBytes(peer.allowedUsage)}</td
+									>
+								{:else}
+									<td
+										class="px-2 py-1 max-md:py-2 {peer.totalUsage >= peer.allowedUsage &&
+											'text-red-500'}"
+										>{formatBytes(peer.totalUsage)} / {formatBytes(peer.allowedUsage)}</td
+									>
+								{/if}
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			{:else}
+				{#each Object.keys(groups) as groupName}
+					<div class="my-4 bg-red-500">
+						{#each groups[groupName] as peer}
+							<div>{peer.name}</div>
+						{/each}
+					</div>
+				{/each}
+			{/if}
 		</div>
 	{/if}
 
@@ -456,7 +450,7 @@
 							<button
 								on:click={async () => {
 									const config = await getConfig(currentPeer?.name || '');
-									qr.toCanvas(document.getElementById('qr-canvas'), config);
+									qr.toCanvas(document.getElementById('qr-canvas'), config || '');
 									showQR = true;
 								}}
 								class="ml-2 rounded-full bg-green-500 p-2 font-bold max-md:text-sm"
