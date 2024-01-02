@@ -189,7 +189,7 @@
 </nav>
 <div class="mt-16">
 	{#if dashboardInfo.isAdmin}
-		<div class="mx-8 my-4 flex items-center justify-between max-md:mx-4 max-md:text-sm">
+		<div class="mx-8 my-4 flex items-center justify-between pt-4 max-md:mx-4 max-md:text-sm">
 			<div>{peers.length} Peers</div>
 			<div>{Object.keys(groups).length} Groups</div>
 		</div>
@@ -201,7 +201,7 @@
 				bind:value={search}
 			/>
 		</div>
-		<div class="my-4">
+		<div class="m-4 flex">
 			<button
 				on:click={() => {
 					newName = '';
@@ -330,9 +330,9 @@
 				</table>
 			{:else}
 				{#each Object.keys(groups) as groupName}
-					<div class="my-4 bg-red-500">
-						{#each groups[groupName] as peer}
-							<div>{peer.name}</div>
+					<div class="my-4 rounded bg-neutral-950 p-4">
+						{#each groups[groupName] as peer, i}
+							<div class="my-1">#{i}. {peer.name}</div>
 						{/each}
 					</div>
 				{/each}
