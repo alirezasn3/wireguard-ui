@@ -39,6 +39,7 @@
 					return sortOrder * (a.currentRx >= b.currentRx ? -1 : 1);
 				});
 		} else {
+			groups = {};
 			for (let i = 0; i < peers.length; i++) {
 				const groupName = peers[i].name.split('-')[0];
 				if (groups[groupName]) groups[groupName].push(peers[i]);
