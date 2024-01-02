@@ -189,23 +189,10 @@
 </nav>
 <div class="mt-16">
 	{#if dashboardInfo.isAdmin}
-		<div class="mx-8 my-4 flex items-center max-md:mx-4 max-md:text-sm">
+		<div class="mx-8 my-4 flex items-center justify-between max-md:mx-4 max-md:text-sm">
 			<div>{peers.length} Peers</div>
 			<div>{Object.keys(groups).length} Groups</div>
 		</div>
-		{#if currentPeer === null}
-			<button
-				on:click={() => {
-					newName = '';
-					showCreatPeer = true;
-					document.body.style.overflowY = 'hidden';
-				}}
-				class="fixed bottom-6 right-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-700 text-lg font-bold hover:cursor-pointer hover:bg-teal-600"
-			>
-				<span class="absolute h-1 w-6 bg-white" />
-				<span class="absolute h-1 w-6 rotate-90 bg-white" />
-			</button>
-		{/if}
 		<div class="w-full px-4">
 			<input
 				placeholder="search peers"
@@ -214,13 +201,25 @@
 				bind:value={search}
 			/>
 		</div>
-		<button
-			class="px-2 py-1 text-lg font-bold"
-			on:click={() => {
-				if (view === 'peers') view = 'groups';
-				else view = 'peers';
-			}}>Show {view === 'peers' ? 'groups' : 'peers'}</button
-		>
+		<div class="my-4">
+			<button
+				on:click={() => {
+					newName = '';
+					showCreatPeer = true;
+					document.body.style.overflowY = 'hidden';
+				}}
+				class="mr-2 flex items-center justify-center rounded bg-green-500 px-2 py-1 text-lg font-bold hover:cursor-pointer hover:bg-green-600"
+			>
+				Add Peer
+			</button>
+			<button
+				class="flex items-center justify-center rounded bg-orange-500 px-2 py-1 text-lg font-bold hover:cursor-pointer hover:bg-orange-600"
+				on:click={() => {
+					if (view === 'peers') view = 'groups';
+					else view = 'peers';
+				}}>Show {view === 'peers' ? 'Groups' : 'Peers'}</button
+			>
+		</div>
 	{/if}
 
 	{#if peers.length}
