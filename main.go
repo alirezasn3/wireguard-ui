@@ -112,7 +112,7 @@ func createPeer(name string, isAdmin bool) (*Peer, error) {
 		return nil, err
 	}
 	allPeers := string(allPeersBytes)
-	for strings.Contains(allPeers, a.ToString()+"/"+strings.Split(config.ServerNetworkAddress, "/")[1]) {
+	for strings.Contains(allPeers, a.ToString()) {
 		a.Increment()
 	}
 
