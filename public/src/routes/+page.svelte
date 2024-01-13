@@ -51,13 +51,13 @@
 	setInterval(async () => {
 		if (editingCurrentPeer || showCreatPeer) return;
 		if (currentPeer) {
-			const res = await fetch('http://10.0.0.1/api/peers/' + currentPeer.name);
+			const res = await fetch('/api/peers/' + currentPeer.name);
 			if (res.status === 200) {
 				if (!currentPeer) return;
 				currentPeer = await res.json();
 			}
 		} else {
-			const res = await fetch('http://10.0.0.1/api/stats');
+			const res = await fetch('/api/stats');
 			if (res.status === 200) {
 				const data = await res.json();
 				peers = Object.values(data.peers as Peer[]);
@@ -82,21 +82,24 @@
 		return `${prefix}${Math.trunc(totalHours / 24)} days`;
 	}
 
-	function formatBytes(totalBytes: number) {
-		if (!totalBytes) return '00.00 KB';
+	function formatBytes(totalBytes: number, space = true) {
+		if (!totalBytes) return `00.00${space ? ' ' : ''}KB`;
 		const totalKilos = totalBytes / 1024;
 		const totalMegas = totalKilos / 1000;
 		const totalGigas = totalMegas / 1000;
 		const totalTeras = totalGigas / 1000;
-		if (totalKilos < 100) return `${totalKilos < 10 ? '0' : ''}${totalKilos.toFixed(2)} KB`;
-		if (totalMegas < 100) return `${totalMegas < 10 ? '0' : ''}${totalMegas.toFixed(2)} MB`;
-		if (totalGigas < 100) return `${totalGigas < 10 ? '0' : ''}${totalGigas.toFixed(2)} GB`;
-		return `${totalTeras < 10 ? '0' : ''}${totalTeras.toFixed(2)} TB`;
+		if (totalKilos < 100)
+			return `${totalKilos < 10 ? '0' : ''}${totalKilos.toFixed(2)}${space ? ' ' : ''}KB`;
+		if (totalMegas < 100)
+			return `${totalMegas < 10 ? '0' : ''}${totalMegas.toFixed(2)}${space ? ' ' : ''}MB`;
+		if (totalGigas < 100)
+			return `${totalGigas < 10 ? '0' : ''}${totalGigas.toFixed(2)}${space ? ' ' : ''}GB`;
+		return `${totalTeras < 10 ? '0' : ''}${totalTeras.toFixed(2)}${space ? ' ' : ''}TB`;
 	}
 
 	async function createPeer(name: string, isAdmin: boolean = false) {
 		try {
-			const res = await fetch('http://10.0.0.1/api/peers/' + name, {
+			const res = await fetch('/api/peers/' + name, {
 				method: 'POST',
 				body: JSON.stringify({ isAdmin })
 			});
@@ -119,7 +122,7 @@
 
 	async function deletePeer(name: string) {
 		try {
-			const res = await fetch('http://10.0.0.1/api/peers/' + name, { method: 'DELETE' });
+			const res = await fetch('/api/peers/' + name, { method: 'DELETE' });
 			if (res.status === 200) {
 				currentPeer = null;
 				showQR = false;
@@ -141,7 +144,7 @@
 		newAllowedUsage: number | undefined
 	) {
 		try {
-			const res = await fetch('http://10.0.0.1/api/peers/' + name, {
+			const res = await fetch('/api/peers/' + name, {
 				method: 'PATCH',
 				body: JSON.stringify({ name: newName, expiresAt: newExpiry, allowedUsage: newAllowedUsage })
 			});
@@ -156,7 +159,7 @@
 
 	async function resetPeerUsage(name: string) {
 		try {
-			const res = await fetch('http://10.0.0.1/api/reset-usage/' + name);
+			const res = await fetch('/api/reset-usage/' + name);
 			if (res.status === 200) {
 				editingCurrentPeer = false;
 			} else resetPeerUsageError = res.status.toString();
@@ -168,7 +171,7 @@
 
 	async function getConfig(name: string) {
 		try {
-			const res = await fetch('http://10.0.0.1/api/configs/' + name);
+			const res = await fetch('/api/configs/' + name);
 			if (res.status === 200) {
 				const config = await res.text();
 				return config;
@@ -310,13 +313,19 @@
 										class="px-2 py-1 max-md:py-2 {sortBy === 'usage' &&
 											'bg-gray-950 font-black'} {peer.totalUsage >= peer.allowedUsage &&
 											'text-red-500'}"
-										>{formatBytes(peer.totalUsage)} / {formatBytes(peer.allowedUsage)}</td
+										>{formatBytes(peer.totalUsage, false)} / {formatBytes(
+											peer.allowedUsage,
+											false
+										)}</td
 									>
 								{:else}
 									<td
 										class="px-2 py-1 max-md:py-2 {peer.totalUsage >= peer.allowedUsage &&
 											'text-red-500'}"
-										>{formatBytes(peer.totalUsage)} / {formatBytes(peer.allowedUsage)}</td
+										>{formatBytes(peer.totalUsage, false)} / {formatBytes(
+											peer.allowedUsage,
+											false
+										)}</td
 									>
 								{/if}
 							</tr>
@@ -348,19 +357,14 @@
 										{formatSeconds(peer.expiresAt)}
 									</td>
 									<td class="px-2 py-1 max-md:py-2">{formatBytes(peer.currentRx)}</td>
-									{#if dashboardInfo.isAdmin}
-										<td
-											class="px-2 py-1 max-md:py-2 {peer.totalUsage >= peer.allowedUsage &&
-												'text-red-500'}"
-											>{formatBytes(peer.totalUsage)} / {formatBytes(peer.allowedUsage)}</td
-										>
-									{:else}
-										<td
-											class="px-2 py-1 max-md:py-2 {peer.totalUsage >= peer.allowedUsage &&
-												'text-red-500'}"
-											>{formatBytes(peer.totalUsage)} / {formatBytes(peer.allowedUsage)}</td
-										>
-									{/if}
+									<td
+										class="px-2 py-1 max-md:py-2 {peer.totalUsage >= peer.allowedUsage &&
+											'text-red-500'}"
+										>{formatBytes(peer.totalUsage, false)} / {formatBytes(
+											peer.allowedUsage,
+											false
+										)}</td
+									>
 								</tr>
 							{/each}
 						</tbody>
