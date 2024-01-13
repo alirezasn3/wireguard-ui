@@ -164,7 +164,7 @@ func createPeer(name string, isAdmin bool) (*Peer, error) {
 	if err != nil {
 		return nil, err
 	}
-	if _, err := f.Write([]byte(fmt.Sprintf("\n[Peer]\nPublicKey = %s\nPresharedKey = %s\nAllowedIPs = %s/%s\n", clientPublicKey, presharedKey, a.ToString(), strings.Split(config.ServerNetworkAddress, "/")[1]))); err != nil {
+	if _, err := f.Write([]byte(fmt.Sprintf("\n[Peer]\nPublicKey = %s\nPresharedKey = %s\nAllowedIPs = %s\n", clientPublicKey, presharedKey, a.ToString()))); err != nil {
 		return nil, err
 	}
 	if err := f.Close(); err != nil {
