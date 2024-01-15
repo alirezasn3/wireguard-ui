@@ -1,6 +1,3 @@
-Here's an updated `README.md` with a new section that explains the differences between admin and normal peers within the Wireguard UI:
-
-```markdown
 # Wireguard UI
 
 Wireguard UI is a web-based interface designed to simplify the management of Wireguard VPN servers. It provides a user-friendly dashboard for administrators to manage VPN peers and groups, monitor usage, and handle configurations.
@@ -45,9 +42,8 @@ The backend of Wireguard UI is written in Go. It provides the necessary API endp
 
 - `main.go`: Contains the main function that starts the API server and includes all the business logic for managing peers, configurations, and statistics.
 - `go.mod`: Lists all the module dependencies required by the project.
-Here's an updated `README.md` that includes the correct installation process for both the Wireguard VPN and the Wireguard UI:
+  Here's an updated `README.md` that includes the correct installation process for both the Wireguard VPN and the Wireguard UI:
 
-```markdown
 # Wireguard UI
 
 Wireguard UI is a web-based interface designed to simplify the management of Wireguard VPN servers. It provides a user-friendly dashboard for administrators to manage VPN peers and groups, monitor usage, and handle configurations.
@@ -70,13 +66,58 @@ Before installing Wireguard UI, you must install Wireguard and generate the nece
 1. Install Wireguard on your server. The installation process varies depending on your operating system. Refer to the [official documentation](https://www.wireguard.com/install/) for instructions.
 
 2. Generate public and private keys for your Wireguard server:
+
    ```bash
    wg genkey | tee privatekey | wg pubkey > publickey
    ```
 
 3. Create a Wireguard configuration file in `/etc/wireguard/`. Use the generated keys to set up your Wireguard server configuration.
 
-4. Create a `config.json` file for Wireguard UI with the necessary details, including the paths to your Wireguard configuration and keys.
+4. Create a `config.json` file for Wireguard UI with the necessary details, including the paths to your Wireguard configuration and keys. You need to provide several key pieces of information that the application will use to configure its connection to MongoDB, set up the Wireguard interface, and define other operational parameters. Below is a detailed description of each field you need to include in your `config.json` file, along with an example:
+
+```json
+{
+  "mongoURI": "mongodb+srv://<username>:<password>@<cluster-address>/<options>",
+  "dbName": "<database-name>",
+  "collectionName": "<collection-name>",
+  "interfaceName": "<wireguard-interface-name>",
+  "serverEndpoint": "<server-endpoint>",
+  "serverPublicKey": "<server-public-key>",
+  "serverNetworkAddress": "<server-network-address>",
+  "path": "<path-to-wireguard-ui-folder>",
+  "dnsServers": "<dns-servers>"
+}
+```
+
+Here's what each field represents:
+
+- `mongoURI`: The full MongoDB URI connection string, which includes the username, password, cluster address, and any connection options.
+- `dbName`: The name of the MongoDB database where the application data will be stored.
+- `collectionName`: The name of the MongoDB collection within the database to store peer information.
+- `interfaceName`: The name of the Wireguard interface, typically something like `wg0`.
+- `serverEndpoint`: The public endpoint of the Wireguard server, including the domain and port.
+- `serverPublicKey`: The public key of the Wireguard server.
+- `serverNetworkAddress`: The network address and subnet for the Wireguard server, in CIDR notation.
+- `path`: The file system path where the wireguard-ui configuration files are located.
+- `dnsServers`: A comma-separated list of DNS servers that the peers will use.
+
+### Example `config.json`:
+
+```json
+{
+  "mongoURI": "mongodb+srv://alireza:verySecurePassword@cluster0.meow.mongodb.net/?retryWrites=true&w=majority",
+  "dbName": "wgdb",
+  "collectionName": "peers",
+  "interfaceName": "wg0",
+  "serverEndpoint": "server1.bestwgvpn.com:42069",
+  "serverPublicKey": "3SEIkOiXlNkUqfO5/Y5tS7CXMF26THkwseC38GbdpDg=",
+  "serverNetworkAddress": "10.8.0.1/24",
+  "path": "/root/wireguard-ui",
+  "dnsServers": "1.1.1.1,8.8.8.8"
+}
+```
+
+Make sure to replace the placeholder values with your actual configuration details. The `mongoURI`, `serverPublicKey`, and other sensitive information should be kept secure and not shared publicly. Save this file as `config.json` in the root directory of your Wireguard UI project or in the location specified by the application documentation.
 
 ### Installing Wireguard UI
 
@@ -131,19 +172,3 @@ The invalidation process involves the following steps:
 4. **Update Database**: The peer's status is updated in the database to reflect that they are suspended, preventing further access to the VPN.
 
 This mechanism ensures that only active and compliant peers maintain access to the VPN, enhancing security and managing resource usage effectively.
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a pull request or open an issue if you have feedback or suggestions.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-- Thanks to the creators and maintainers of Wireguard for the fantastic VPN software.
-- Thanks to all contributors of the `alirezasn3/wireguard-ui` project.
-```
-
-This section provides a clear distinction between the roles and capabilities of admin and normal peers within the Wireguard UI, which should help users understand the level of access and control they have based on their role. Adjustments can be made as necessary to fit the specifics of the project and its documentation.
