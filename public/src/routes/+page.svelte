@@ -149,6 +149,7 @@
 				body: JSON.stringify({ name: newName, expiresAt: newExpiry, allowedUsage: newAllowedUsage })
 			});
 			if (res.status === 200) {
+				if (newName && currentPeer) currentPeer.name = newName;
 				editingCurrentPeer = false;
 			} else updatePeerError = res.status.toString();
 		} catch (error) {
