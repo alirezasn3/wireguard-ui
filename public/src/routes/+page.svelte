@@ -51,13 +51,13 @@
 	setInterval(async () => {
 		if (editingCurrentPeer || showCreatPeer) return;
 		if (currentPeer) {
-			const res = await fetch('/api/peers/' + currentPeer.name);
+			const res = await fetch('http://10.0.0.1/api/peers/' + currentPeer.name);
 			if (res.status === 200) {
 				if (!currentPeer) return;
 				currentPeer = await res.json();
 			}
 		} else {
-			const res = await fetch('/api/stats');
+			const res = await fetch('http://10.0.0.1/api/stats');
 			if (res.status === 200) {
 				const data = await res.json();
 				peers = Object.values(data.peers as Peer[]);
@@ -99,7 +99,7 @@
 
 	async function createPeer(name: string, isAdmin: boolean = false) {
 		try {
-			const res = await fetch('/api/peers/' + name, {
+			const res = await fetch('http://10.0.0.1/api/peers/' + name, {
 				method: 'POST',
 				body: JSON.stringify({ isAdmin })
 			});
@@ -122,7 +122,7 @@
 
 	async function deletePeer(name: string) {
 		try {
-			const res = await fetch('/api/peers/' + name, { method: 'DELETE' });
+			const res = await fetch('http://10.0.0.1/api/peers/' + name, { method: 'DELETE' });
 			if (res.status === 200) {
 				currentPeer = null;
 				showQR = false;
@@ -144,7 +144,7 @@
 		newAllowedUsage: number | undefined
 	) {
 		try {
-			const res = await fetch('/api/peers/' + name, {
+			const res = await fetch('http://10.0.0.1/api/peers/' + name, {
 				method: 'PATCH',
 				body: JSON.stringify({ name: newName, expiresAt: newExpiry, allowedUsage: newAllowedUsage })
 			});
@@ -159,7 +159,7 @@
 
 	async function resetPeerUsage(name: string) {
 		try {
-			const res = await fetch('/api/reset-usage/' + name);
+			const res = await fetch('http://10.0.0.1/api/reset-usage/' + name);
 			if (res.status === 200) {
 				editingCurrentPeer = false;
 			} else resetPeerUsageError = res.status.toString();
@@ -171,7 +171,7 @@
 
 	async function getConfig(name: string) {
 		try {
-			const res = await fetch('/api/configs/' + name);
+			const res = await fetch('http://10.0.0.1/api/configs/' + name);
 			if (res.status === 200) {
 				const config = await res.text();
 				return config;
@@ -231,7 +231,7 @@
 				>
 					<thead class="border-b-2 border-slate-800">
 						<tr class="select-none">
-							<th class="w-2 p-2 {!dashboardInfo.isAdmin && 'hidden'}">#</th>
+							<th class="p-2 {!dashboardInfo.isAdmin && 'hidden'}">#</th>
 							<th
 								on:click={() => {
 									sortBy = 'name';
@@ -247,8 +247,8 @@
 									}
 									sortBy = 'expiry';
 								}}
-								class="w-24 p-2 hover:cursor-pointer hover:underline max-md:w-20 {sortBy ===
-									'expiry' && 'bg-gray-950 font-black'}">Expiry</th
+								class="p-2 hover:cursor-pointer hover:underline {sortBy === 'expiry' &&
+									'bg-gray-950 font-black'}">Expiry</th
 							>
 							<th
 								on:click={() => {
@@ -258,9 +258,8 @@
 									}
 									sortBy = 'bandwidth';
 								}}
-								class="w-24 p-2 hover:cursor-pointer hover:underline max-md:w-20 {sortBy ===
-									'bandwidth' && 'bg-gray-950 font-black'} {!dashboardInfo.isAdmin && 'hidden'}"
-								>Bandwidth</th
+								class="p-2 hover:cursor-pointer hover:underline {sortBy === 'bandwidth' &&
+									'bg-gray-950 font-black'} {!dashboardInfo.isAdmin && 'hidden'}">Bandwidth</th
 							>
 							{#if dashboardInfo.isAdmin}
 								<th
@@ -271,8 +270,8 @@
 										}
 										sortBy = 'usage';
 									}}
-									class="w-52 p-2 hover:cursor-pointer hover:underline max-md:w-40 {sortBy ===
-										'usage' && 'bg-gray-950 font-black'}"
+									class="p-2 hover:cursor-pointer hover:underline {sortBy === 'usage' &&
+										'bg-gray-950 font-black'}"
 								>
 									Usage</th
 								>
@@ -293,39 +292,34 @@
 								class="hover:bg-slate-800"
 							>
 								<td class="px-2 py-1 max-md:py-2 {!dashboardInfo.isAdmin && 'hidden'}">{i + 1}</td>
-								<td class="px-2 py-1 max-md:py-2 {sortBy === 'name' && 'bg-gray-950 font-black'}"
-									>{peer.name}</td
+								<td
+									class="whitespace-nowrap px-2 py-1 max-md:py-2 {sortBy === 'name' &&
+										'bg-gray-950 font-black'}">{peer.name}</td
 								>
 								<td
-									class="px-2 py-1 max-md:py-2 {sortBy === 'expiry' &&
+									class="whitespace-nowrap px-2 py-1 max-md:py-2 {sortBy === 'expiry' &&
 										'bg-gray-950 font-black'} {Math.trunc(peer.expiresAt - Date.now() / 1000) < 0 &&
 										'text-red-500'}"
 								>
 									{formatSeconds(peer.expiresAt)}
 								</td>
 								<td
-									class="px-2 py-1 max-md:py-2 {sortBy === 'bandwidth' &&
+									class="whitespace-nowrap px-2 py-1 max-md:py-2 {sortBy === 'bandwidth' &&
 										'bg-gray-950 font-black'} {!dashboardInfo.isAdmin && 'hidden'}"
 									>{formatBytes(peer.currentRx)}</td
 								>
 								{#if dashboardInfo.isAdmin}
 									<td
-										class="px-2 py-1 max-md:py-2 {sortBy === 'usage' &&
+										class="whitespace-nowrap px-2 py-1 max-md:py-2 {sortBy === 'usage' &&
 											'bg-gray-950 font-black'} {peer.totalUsage >= peer.allowedUsage &&
 											'text-red-500'}"
-										>{formatBytes(peer.totalUsage, false)} / {formatBytes(
-											peer.allowedUsage,
-											false
-										)}</td
+										>{formatBytes(peer.totalUsage)} / {formatBytes(peer.allowedUsage, false)}</td
 									>
 								{:else}
 									<td
-										class="px-2 py-1 max-md:py-2 {peer.totalUsage >= peer.allowedUsage &&
-											'text-red-500'}"
-										>{formatBytes(peer.totalUsage, false)} / {formatBytes(
-											peer.allowedUsage,
-											false
-										)}</td
+										class="whitespace-nowrap px-2 py-1 max-md:py-2 {peer.totalUsage >=
+											peer.allowedUsage && 'text-red-500'}"
+										>{formatBytes(peer.totalUsage)} / {formatBytes(peer.allowedUsage, false)}</td
 									>
 								{/if}
 							</tr>
@@ -349,21 +343,21 @@
 									class="hover:bg-slate-800"
 								>
 									<td class="px-2 py-1 max-md:py-2">{i + 1}</td>
-									<td class="px-2 py-1 max-md:py-2">{peer.name}</td>
+									<td class="whitespace-nowrap px-2 py-1 max-md:py-2">{peer.name}</td>
 									<td
-										class="px-2 py-1 max-md:py-2 {Math.trunc(peer.expiresAt - Date.now() / 1000) <
-											0 && 'text-red-500'}"
+										class="whitespace-nowrap px-2 py-1 max-md:py-2 {Math.trunc(
+											peer.expiresAt - Date.now() / 1000
+										) < 0 && 'text-red-500'}"
 									>
 										{formatSeconds(peer.expiresAt)}
 									</td>
-									<td class="px-2 py-1 max-md:py-2">{formatBytes(peer.currentRx)}</td>
+									<td class="whitespace-nowrap px-2 py-1 max-md:py-2"
+										>{formatBytes(peer.currentRx)}</td
+									>
 									<td
-										class="px-2 py-1 max-md:py-2 {peer.totalUsage >= peer.allowedUsage &&
-											'text-red-500'}"
-										>{formatBytes(peer.totalUsage, false)} / {formatBytes(
-											peer.allowedUsage,
-											false
-										)}</td
+										class="whitespace-nowrap px-2 py-1 max-md:py-2 {peer.totalUsage >=
+											peer.allowedUsage && 'text-red-500'}"
+										>{formatBytes(peer.totalUsage)} / {formatBytes(peer.allowedUsage)}</td
 									>
 								</tr>
 							{/each}
