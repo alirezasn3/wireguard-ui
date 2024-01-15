@@ -26,7 +26,6 @@ type Config struct {
 	MongoURI             string `json:"mongoURI"`
 	DBName               string `json:"dbName"`
 	CollectionName       string `json:"collectionName"`
-	RefreshInterval      int    `json:"refreshInterval"`
 	InterfaceName        string `json:"interfaceName"`
 	Collection           *mongo.Collection
 	Peers                map[string]*Peer
