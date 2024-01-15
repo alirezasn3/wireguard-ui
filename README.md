@@ -158,7 +158,84 @@ After setting up Wireguard, proceed with the installation of Wireguard UI:
 
 Now you can access the Wireguard UI dashboard through your web browser.
 
-Here's a short description for the README about how peers are invalidated:
+## Systemd Service Configuration
+
+To ensure that the Wireguard UI application starts automatically on boot and remains running, it is configured as a systemd service. Below is the configuration for the Wireguard UI service, which is defined in the `wireguard-ui.service` file.
+
+### Service File
+
+The service file is typically located at `/etc/systemd/system/wireguard-ui.service` and contains the following:
+
+```ini
+[Unit]
+Description=Wireguard UI
+After=syslog.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+PIDFile=/run/wireguard-ui.pid
+ExecStart=/root/wireguard-ui/wireguard-ui /root/wireguard-ui/
+Restart=on-failure
+RestartSec=1s
+
+[Install]
+WantedBy=multi-user.target
+```
+
+### Description of Directives
+
+- `[Unit]` Section:
+  - `Description`: Provides a brief description of the service.
+  - `After`: Ensures that the service starts after the network is online.
+  - `Wants`: Specifies that the service wants the network to be online before starting.
+
+- `[Service]` Section:
+  - `Type`: Defines the service type; `simple` is used for services that run continuously.
+  - `PIDFile`: Specifies the path to the PID file that the service will create.
+  - `ExecStart`: Provides the command to start the service, including the path to the executable and its working directory.
+  - `Restart`: Configures the service to restart on failure.
+  - `RestartSec`: Sets the time to wait before restarting the service.
+
+- `[Install]` Section:
+  - `WantedBy`: Defines the target that the service should be attached to, ensuring it starts when the system reaches a multi-user state.
+
+### Enabling and Starting the Service
+
+To enable and start the Wireguard UI service, use the following commands:
+
+```bash
+sudo systemctl enable wireguard-ui.service
+sudo systemctl start wireguard-ui.service
+```
+
+Enabling the service will ensure that it starts on every boot. Starting the service will run it immediately.
+
+### Checking the Service Status
+
+To check the status of the Wireguard UI service, use:
+
+```bash
+sudo systemctl status wireguard-ui.service
+```
+
+This command will provide information about whether the service is active, the most recent log entries, and other status details.
+
+### Stopping or Restarting the Service
+
+To stop the service, use:
+
+```bash
+sudo systemctl stop wireguard-ui.service
+```
+
+To restart the service, use:
+
+```bash
+sudo systemctl restart wireguard-ui.service
+```
+
+These commands allow you to manually stop or restart the Wireguard UI service as needed.
 
 ## Peer Invalidating Process
 
