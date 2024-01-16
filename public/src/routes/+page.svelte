@@ -458,7 +458,7 @@
 						{/if}
 					{:else}
 						<div class="mb-2 flex justify-end break-keep border-slate-700 max-md:text-sm">
-							{#if dashboardInfo.role === 'admin'}
+							{#if dashboardInfo.role !== 'user'}
 								<button
 									on:click={() => deletePeer(currentPeer?.name || '')}
 									class="ml-2 rounded-full bg-red-500 p-2 font-bold max-md:text-sm"
