@@ -462,14 +462,6 @@ func init() {
 
 	for i, p := range data {
 		config.Peers[p.PublicKey] = &data[i]
-		// temp debug code
-		if p.TelegramToken == "" {
-			tt := uuid.New().String()
-			_, err = config.Collection.UpdateOne(context.TODO(), bson.M{"publicKey": p.PublicKey}, bson.M{"$set": bson.M{"telegramToken": tt}})
-			if err != nil {
-				fmt.Println(err)
-			}
-		}
 	}
 
 	// get peers info from wg
