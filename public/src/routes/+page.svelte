@@ -495,7 +495,8 @@
 											newAllowedUsage = Math.trunc(
 												currentPeer.allowedUsage / 1024000000
 											).toString();
-											newName = currentPeer.name.split('-').slice(1).join('-');
+											if (dashboardInfo.role === 'admin') newName = currentPeer.name;
+											else newName = currentPeer.name.split('-').slice(1).join('-');
 										}
 										editingCurrentPeer = true;
 									}}
