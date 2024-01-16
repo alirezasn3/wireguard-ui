@@ -475,7 +475,7 @@
 											newAllowedUsage = Math.trunc(
 												currentPeer.allowedUsage / 1024000000
 											).toString();
-											newName = currentPeer.name;
+											newName = currentPeer.name.split('-').slice(1).join('-');
 										}
 										editingCurrentPeer = true;
 									}}
