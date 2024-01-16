@@ -21,12 +21,12 @@
 	let newAllowedUsage = '';
 	let newIsAdmin = false;
 	let editingCurrentPeer = false;
+	let showQR = false;
 	let createPeerError = '';
 	let updatePeerError = '';
 	let deletePeerError = '';
 	let resetPeerUsageError = '';
 	let search = '';
-	let currentPeerConfig: string | undefined = undefined;
 
 	$: {
 		if (view === 'peers') {
@@ -56,12 +56,7 @@
 				if (!currentPeer) return;
 				currentPeer = await res.json();
 			}
-			if (!currentPeerConfig) {
-				currentPeerConfig = await getConfig(currentPeer?.name || '');
-				qr.toCanvas(document.getElementById('qr-canvas'), currentPeerConfig || '');
-			}
 		} else {
-			currentPeerConfig = undefined;
 			const res = await fetch('/api/stats');
 			if (res.status === 200) {
 				const data = await res.json();
@@ -130,6 +125,7 @@
 			const res = await fetch('/api/peers/' + name, { method: 'DELETE' });
 			if (res.status === 200) {
 				currentPeer = null;
+				showQR = false;
 				editingCurrentPeer = false;
 				document.body.style.overflowY = 'auto';
 			} else {
@@ -387,6 +383,7 @@
 					<button
 						on:click={() => {
 							currentPeer = null;
+							showQR = false;
 							editingCurrentPeer = false;
 							document.body.style.overflowY = 'auto';
 						}}
@@ -481,6 +478,15 @@
 							<button
 								on:click={async () => {
 									const config = await getConfig(currentPeer?.name || '');
+									qr.toCanvas(document.getElementById('qr-canvas'), config || '');
+									showQR = true;
+								}}
+								class="ml-2 rounded-full bg-green-500 p-2 font-bold max-md:text-sm"
+								><img class="h-6 w-6 invert" src="/qr.png" alt="qrcode" /></button
+							>
+							<button
+								on:click={async () => {
+									const config = await getConfig(currentPeer?.name || '');
 									const file = new Blob([config || ''], { type: 'application/octet-stream' });
 									const a = document.createElement('a');
 									a.href = URL.createObjectURL(file);
@@ -530,7 +536,10 @@
 							<div class="font-bold">Expiry:</div>
 							<div class="ml-4 text-sm text-slate-300">{formatSeconds(currentPeer.expiresAt)}</div>
 						</div>
-						<canvas class="max-md:w-[calc(100vw-64)]" id="qr-canvas" />
+						<canvas
+							class="max-md:w-[calc(100vw-64)] {showQR ? 'max-h-fit' : 'max-h-0'}"
+							id="qr-canvas"
+						/>
 					{/if}
 				</div>
 			</div>
