@@ -399,6 +399,8 @@
 							currentPeer = null;
 							showQR = false;
 							editingCurrentPeer = false;
+							newRole = '';
+							newName = '';
 							document.body.style.overflowY = 'auto';
 						}}
 						class="relative h-12 w-12 hover:cursor-pointer"
@@ -497,6 +499,7 @@
 											).toString();
 											if (dashboardInfo.role === 'admin') newName = currentPeer.name;
 											else newName = currentPeer.name.split('-').slice(1).join('-');
+											newRole = currentPeer.role;
 										}
 										editingCurrentPeer = true;
 									}}
