@@ -52,7 +52,7 @@ type Peer struct {
 	Suspended       bool               `bson:"suspended" json:"suspended"`
 	AllowedUsage    uint64             `bson:"allowedUsage" json:"allowedUsage"`
 	TotalUsage      uint64             `bson:"totalUsage" json:"totalUsage"`
-	IsAdmin         bool               `bson:"isAdmin" json:"isAdmin"`
+	Role            string             `bson:"role" json:"role"`
 }
 
 type IPAddress struct {
@@ -93,7 +93,7 @@ func (a *IPAddress) Parse(address string) {
 	}
 }
 
-func createPeer(name string, isAdmin bool) (*Peer, error) {
+func createPeer(name string, role string) (*Peer, error) {
 	// check if name is already taken
 	for _, peer := range config.Peers {
 		if name == peer.Name {
@@ -155,7 +155,7 @@ func createPeer(name string, isAdmin bool) (*Peer, error) {
 		Address:      a.ToString(),
 		ExpiresAt:    uint64(time.Now().Unix() + 60*60*24*30),
 		AllowedUsage: 50 * 1024000000,
-		IsAdmin:      isAdmin,
+		Role:         role,
 	}
 
 	// update config file
@@ -442,7 +442,7 @@ func init() {
 		if err != nil {
 			panic(err)
 		}
-		p, err := createPeer("Admin-0", true)
+		p, err := createPeer("Admin-0", "admin")
 		if err != nil {
 			panic(err)
 		}
@@ -515,7 +515,7 @@ func main() {
 
 		tempPeers := make(map[string]*Peer)
 
-		if peer.IsAdmin {
+		if peer.Role == "admin" {
 			tempPeers = config.Peers
 		} else {
 			for pk, p := range config.Peers {
@@ -526,14 +526,14 @@ func main() {
 		}
 		data := make(map[string]interface{})
 		data["peers"] = tempPeers
-		data["isAdmin"] = peer.IsAdmin
+		data["role"] = peer.Role
 		data["name"] = peer.Name
 		c.JSON(200, data)
 	})
 	r.PATCH("/api/peers/:name", func(c *gin.Context) {
 		ra := c.Request.RemoteAddr
 		client := findPeerByIp(strings.Split(ra, ":")[0])
-		if client == nil || !client.IsAdmin {
+		if client == nil || client.Role != "admin" {
 			c.AbortWithStatus(403)
 			return
 		}
@@ -580,7 +580,7 @@ func main() {
 	r.POST("/api/peers/:name", func(c *gin.Context) {
 		ra := c.Request.RemoteAddr
 		client := findPeerByIp(strings.Split(ra, ":")[0])
-		if client == nil || !client.IsAdmin {
+		if client == nil || client.Role != "admin" {
 			c.AbortWithStatus(403)
 			return
 		}
@@ -592,7 +592,7 @@ func main() {
 			c.AbortWithStatus(400)
 			return
 		}
-		p, err = createPeer(name, p.IsAdmin)
+		p, err = createPeer(name, p.Role)
 		if err != nil {
 			fmt.Println(err)
 			c.JSON(400, map[string]interface{}{"error": err.Error()})
@@ -603,7 +603,7 @@ func main() {
 	r.DELETE("/api/peers/:name", func(c *gin.Context) {
 		ra := c.Request.RemoteAddr
 		client := findPeerByIp(strings.Split(ra, ":")[0])
-		if client == nil || !client.IsAdmin {
+		if client == nil || client.Role != "admin" {
 			c.AbortWithStatus(403)
 			return
 		}
@@ -622,7 +622,7 @@ func main() {
 	r.GET("/api/reset-usage/:name", func(c *gin.Context) {
 		ra := c.Request.RemoteAddr
 		client := findPeerByIp(strings.Split(ra, ":")[0])
-		if client == nil || !client.IsAdmin {
+		if client == nil || client.Role != "admin" {
 			c.AbortWithStatus(403)
 			return
 		}
