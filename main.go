@@ -156,16 +156,17 @@ func createPeer(name string, role string) (*Peer, error) {
 
 	// add peer
 	config.Peers[clientPublicKey] = &Peer{
-		ID:            primitive.NewObjectID(),
-		Name:          name,
-		PublicKey:     clientPublicKey,
-		PrivateKey:    clientPrivateKey,
-		PresharedKey:  presharedKey,
-		Address:       a.ToString(),
-		ExpiresAt:     uint64(time.Now().Unix() + 60*60*24*30),
-		AllowedUsage:  50 * 1024000000,
-		Role:          role,
-		TelegramToken: tt,
+		ID:             primitive.NewObjectID(),
+		Name:           name,
+		PublicKey:      clientPublicKey,
+		PrivateKey:     clientPrivateKey,
+		PresharedKey:   presharedKey,
+		Address:        a.ToString(),
+		ExpiresAt:      uint64(time.Now().Unix() + 60*60*24*30),
+		AllowedUsage:   50 * 1024000000,
+		Role:           role,
+		TelegramToken:  tt,
+		TelegramChatID: 0,
 	}
 
 	// update config file
@@ -542,7 +543,7 @@ func main() {
 								fmt.Println(err)
 								continue
 							}
-							msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Peer registered")
+							msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("کانکشن شما (%s) ثبت شد", p.Name))
 							msg.ReplyToMessageID = update.Message.MessageID
 							bot.Send(msg)
 						}
