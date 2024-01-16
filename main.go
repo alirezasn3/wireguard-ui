@@ -54,7 +54,7 @@ type Peer struct {
 	AllowedUsage    uint64             `bson:"allowedUsage" json:"allowedUsage"`
 	TotalUsage      uint64             `bson:"totalUsage" json:"totalUsage"`
 	Role            string             `bson:"role" json:"role"`
-	TelegramToken   string             `bson:"telegramToken" json::"telegramToken"`
+	TelegramToken   string             `bson:"telegramToken" json:"telegramToken"`
 }
 
 type IPAddress struct {
