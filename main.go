@@ -533,7 +533,7 @@ func main() {
 	r.PATCH("/api/peers/:name", func(c *gin.Context) {
 		ra := c.Request.RemoteAddr
 		client := findPeerByIp(strings.Split(ra, ":")[0])
-		if client == nil || client.Role != "admin" {
+		if client == nil || client.Role == "user" || (client.Role == "distributor" && strings.Split(client.Name, "-")[0] != strings.Split(c.Param("name"), "-")[0]) {
 			c.AbortWithStatus(403)
 			return
 		}
@@ -580,7 +580,7 @@ func main() {
 	r.POST("/api/peers/:name", func(c *gin.Context) {
 		ra := c.Request.RemoteAddr
 		client := findPeerByIp(strings.Split(ra, ":")[0])
-		if client == nil || client.Role != "admin" {
+		if client == nil || client.Role == "user" || (client.Role == "distributor" && strings.Split(client.Name, "-")[0] != strings.Split(c.Param("name"), "-")[0]) {
 			c.AbortWithStatus(403)
 			return
 		}
@@ -603,7 +603,7 @@ func main() {
 	r.DELETE("/api/peers/:name", func(c *gin.Context) {
 		ra := c.Request.RemoteAddr
 		client := findPeerByIp(strings.Split(ra, ":")[0])
-		if client == nil || client.Role != "admin" {
+		if client == nil || client.Role == "user" || (client.Role == "distributor" && strings.Split(client.Name, "-")[0] != strings.Split(c.Param("name"), "-")[0]) {
 			c.AbortWithStatus(403)
 			return
 		}
@@ -622,7 +622,7 @@ func main() {
 	r.GET("/api/reset-usage/:name", func(c *gin.Context) {
 		ra := c.Request.RemoteAddr
 		client := findPeerByIp(strings.Split(ra, ":")[0])
-		if client == nil || client.Role != "admin" {
+		if client == nil || client.Role == "user" || (client.Role == "distributor" && strings.Split(client.Name, "-")[0] != strings.Split(c.Param("name"), "-")[0]) {
 			c.AbortWithStatus(403)
 			return
 		}
