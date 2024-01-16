@@ -51,13 +51,13 @@
 	setInterval(async () => {
 		if (editingCurrentPeer || showCreatPeer) return;
 		if (currentPeer) {
-			const res = await fetch('http://10.0.0.1/api/peers/' + currentPeer.name);
+			const res = await fetch('/api/peers/' + currentPeer.name);
 			if (res.status === 200) {
 				if (!currentPeer) return;
 				currentPeer = await res.json();
 			}
 		} else {
-			const res = await fetch('http://10.0.0.1/api/stats');
+			const res = await fetch('/api/stats');
 			if (res.status === 200) {
 				const data = await res.json();
 				peers = Object.values(data.peers as Peer[]);
@@ -99,7 +99,7 @@
 
 	async function createPeer(name: string, role: string = 'user') {
 		try {
-			const res = await fetch('http://10.0.0.1/api/peers/' + name, {
+			const res = await fetch('/api/peers/' + name, {
 				method: 'POST',
 				body: JSON.stringify({ role })
 			});
@@ -122,7 +122,7 @@
 
 	async function deletePeer(name: string) {
 		try {
-			const res = await fetch('http://10.0.0.1/api/peers/' + name, { method: 'DELETE' });
+			const res = await fetch('/api/peers/' + name, { method: 'DELETE' });
 			if (res.status === 200) {
 				currentPeer = null;
 				showQR = false;
@@ -144,7 +144,8 @@
 		newAllowedUsage: number | undefined
 	) {
 		try {
-			const res = await fetch('http://10.0.0.1/api/peers/' + name, {
+			if (name === newName) newName = undefined;
+			const res = await fetch('/api/peers/' + name, {
 				method: 'PATCH',
 				body: JSON.stringify({ name: newName, expiresAt: newExpiry, allowedUsage: newAllowedUsage })
 			});
@@ -160,7 +161,7 @@
 
 	async function resetPeerUsage(name: string) {
 		try {
-			const res = await fetch('http://10.0.0.1/api/reset-usage/' + name);
+			const res = await fetch('/api/reset-usage/' + name);
 			if (res.status === 200) {
 				editingCurrentPeer = false;
 			} else resetPeerUsageError = res.status.toString();
@@ -172,7 +173,7 @@
 
 	async function getConfig(name: string) {
 		try {
-			const res = await fetch('http://10.0.0.1/api/configs/' + name);
+			const res = await fetch('/api/configs/' + name);
 			if (res.status === 200) {
 				const config = await res.text();
 				return config;
@@ -190,7 +191,7 @@
 	<span class="text-sm">{dashboardInfo.name}</span>
 </nav>
 <div class="mt-16">
-	{#if dashboardInfo.role === 'admin'}
+	{#if dashboardInfo.role === 'admin' || dashboardInfo.role === 'distributor'}
 		<div class="mx-8 my-4 flex items-center justify-between pt-4 max-md:mx-4 max-md:text-sm">
 			<div>{peers.length} Peers</div>
 			<div>{Object.keys(groups).length} Groups</div>
@@ -212,15 +213,17 @@
 				}}
 				class="mr-2 flex items-center justify-center rounded bg-green-500 px-2 py-1 text-lg font-bold hover:cursor-pointer hover:bg-green-600"
 			>
-				Add Peer
+				ADD PEER
 			</button>
-			<button
-				class="flex items-center justify-center rounded bg-orange-500 px-2 py-1 text-lg font-bold hover:cursor-pointer hover:bg-orange-600"
-				on:click={() => {
-					if (view === 'peers') view = 'groups';
-					else view = 'peers';
-				}}>Show {view === 'peers' ? 'Groups' : 'Peers'}</button
-			>
+			{#if dashboardInfo.role === 'admin'}
+				<button
+					class="flex items-center justify-center rounded bg-orange-500 px-2 py-1 text-lg font-bold hover:cursor-pointer hover:bg-orange-600"
+					on:click={() => {
+						if (view === 'peers') view = 'groups';
+						else view = 'peers';
+					}}>SHOW {view === 'peers' ? 'GROUPS' : 'PEERS'}</button
+				>
+			{/if}
 		</div>
 	{/if}
 
@@ -407,7 +410,10 @@
 							<span class="absolute h-1 w-4 origin-left rotate-45 rounded bg-white" />
 						</button>
 						<div class="mb-2">Peer's Name</div>
-						<div class="mb-4 w-full">
+						<div class="mb-4 flex items-center">
+							{#if dashboardInfo.role === 'distributor'}
+								<div class="mr-1">{dashboardInfo.name.split('-')[0]}-</div>
+							{/if}
 							<input type="text" bind:value={newName} class="w-full rounded px-2 py-1 text-black" />
 						</div>
 						<div class="mb-2">Peer's Expiry</div>
@@ -433,7 +439,9 @@
 								if (currentPeer)
 									await updatePeer(
 										currentPeer.name,
-										newName !== currentPeer.name ? newName : undefined,
+										dashboardInfo.role === 'admin'
+											? newName
+											: `${dashboardInfo.name.split('-')[0]}-${newName}`,
 										Math.trunc(Date.now() / 1000 + Number(newExpiry) * 3600 * 24) !==
 											currentPeer.expiresAt
 											? Math.trunc(Date.now() / 1000 + Number(newExpiry) * 3600 * 24)
@@ -573,22 +581,45 @@
 					</button>
 				</div>
 				<div class="flex flex-col p-4">
-					<div class="mb-2">Peer's Name</div>
-					<div class="mb-4 w-full">
-						<input type="text" bind:value={newName} class="w-full rounded px-2 py-1 text-black" />
-					</div>
+					<label for="name" class="mb-2">Peer's Name</label>
 					<div class="mb-4 flex items-center">
-						<!-- <input bind:checked={newRole} type="checkbox" name="newRole" id="isAdmin" /> -->
-						<!-- <label for="newRole" class="ml-1">Role</label> -->
+						{#if dashboardInfo.role === 'distributor'}
+							<div class="mr-1">{dashboardInfo.name.split('-')[0]}-</div>
+						{/if}
+						<input
+							name="name"
+							id="name"
+							type="text"
+							bind:value={newName}
+							class="w-full rounded px-2 py-1 text-black"
+						/>
 					</div>
+					{#if dashboardInfo.role === 'admin'}
+						<label for="role" class="mb-2 text-white">Role</label>
+						<select
+							bind:value={newRole}
+							name="role"
+							id="role"
+							class="mb-4 rounded px-2 py-1 text-black"
+						>
+							<option value="user">User</option>
+							<option value="distributor">Distributor</option>
+							<option value="admin">Admin</option>
+						</select>
+					{/if}
 					<button
 						on:click={async () => {
-							await createPeer(newName, newRole);
+							await createPeer(
+								dashboardInfo.role === 'admin'
+									? newName
+									: `${dashboardInfo.name.split('-')[0]}-${newName}`,
+								newRole
+							);
 							if (createPeerError === '') {
 								showCreatPeer = false;
 							}
 						}}
-						class="mb-4 ml-auto rounded bg-green-500 px-2 py-1 font-bold">CREATE</button
+						class="ml-auto rounded bg-green-500 px-2 py-1 font-bold">CREATE</button
 					>
 					{#if createPeerError !== ''}
 						<div class="text-bold text-red-500">{createPeerError}</div>
