@@ -14,6 +14,7 @@ import (
 
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -53,6 +54,7 @@ type Peer struct {
 	AllowedUsage    uint64             `bson:"allowedUsage" json:"allowedUsage"`
 	TotalUsage      uint64             `bson:"totalUsage" json:"totalUsage"`
 	Role            string             `bson:"role" json:"role"`
+	TelegramToken   string             `bson:"telegramToken" json::"telegramToken"`
 }
 
 type IPAddress struct {
@@ -145,17 +147,21 @@ func createPeer(name string, role string) (*Peer, error) {
 	}
 	presharedKey := strings.TrimSpace(string(presharedKeyBytes))
 
+	// create telegram token
+	tt := uuid.New().String()
+
 	// add peer
 	config.Peers[clientPublicKey] = &Peer{
-		ID:           primitive.NewObjectID(),
-		Name:         name,
-		PublicKey:    clientPublicKey,
-		PrivateKey:   clientPrivateKey,
-		PresharedKey: presharedKey,
-		Address:      a.ToString(),
-		ExpiresAt:    uint64(time.Now().Unix() + 60*60*24*30),
-		AllowedUsage: 50 * 1024000000,
-		Role:         role,
+		ID:            primitive.NewObjectID(),
+		Name:          name,
+		PublicKey:     clientPublicKey,
+		PrivateKey:    clientPrivateKey,
+		PresharedKey:  presharedKey,
+		Address:       a.ToString(),
+		ExpiresAt:     uint64(time.Now().Unix() + 60*60*24*30),
+		AllowedUsage:  50 * 1024000000,
+		Role:          role,
+		TelegramToken: tt,
 	}
 
 	// update config file
@@ -456,6 +462,14 @@ func init() {
 
 	for i, p := range data {
 		config.Peers[p.PublicKey] = &data[i]
+		// temp debug code
+		if p.TelegramToken == "" {
+			tt := uuid.New().String()
+			_, err = config.Collection.UpdateOne(context.TODO(), bson.M{"publicKey": p.PublicKey}, bson.M{"$set": bson.M{"telegramToken": tt}})
+			if err != nil {
+				fmt.Println(err)
+			}
+		}
 	}
 
 	// get peers info from wg

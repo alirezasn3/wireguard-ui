@@ -15,4 +15,5 @@ export interface Peer {
 	presharedKey: string;
 	publicKey: string;
 	role: string;
+	telegramToken: string;
 }

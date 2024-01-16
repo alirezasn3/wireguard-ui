@@ -573,6 +573,10 @@
 							<div class="font-bold">Expiry:</div>
 							<div class="ml-4 text-sm text-slate-300">{formatSeconds(currentPeer.expiresAt)}</div>
 						</div>
+						<div class="mb-2">
+							<div class="font-bold">Telegram Bot Token:</div>
+							<div class="ml-4 text-sm text-slate-300">{currentPeer.telegramToken}</div>
+						</div>
 						<canvas
 							class="max-md:w-[calc(100vw-64)] {showQR ? 'max-h-fit' : 'max-h-0'}"
 							id="qr-canvas"
