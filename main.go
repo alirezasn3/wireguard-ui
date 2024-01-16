@@ -531,7 +531,6 @@ func main() {
 					// check if its add register command
 					if update.Message.Command() == "start" {
 						tt := update.Message.CommandArguments()
-						fmt.Println(tt)
 						// check if arg is peer's telegram token
 						if len(tt) == 36 {
 							p := Peer{}
