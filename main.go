@@ -514,16 +514,10 @@ func main() {
 			fmt.Println(err)
 			return
 		}
-
-		bot.Debug = true
-
 		log.Printf("authorized on account %s", bot.Self.UserName)
-
 		u := tgbotapi.NewUpdate(0)
 		u.Timeout = 60
-
 		updates := bot.GetUpdatesChan(u)
-
 		for update := range updates {
 			if update.Message != nil {
 				// check if message is command
