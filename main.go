@@ -58,6 +58,7 @@ type Peer struct {
 	TotalUsage      uint64             `bson:"totalUsage" json:"totalUsage"`
 	Role            string             `bson:"role" json:"role"`
 	TelegramToken   string             `bson:"telegramToken" json:"telegramToken"`
+	TelegramChatID  int64              `bson:"telegramChatID" json:"telegramChatID"`
 }
 
 type IPAddress struct {
@@ -525,10 +526,34 @@ func main() {
 
 		for update := range updates {
 			if update.Message != nil {
-				log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
-				msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
-				msg.ReplyToMessageID = update.Message.MessageID
-				bot.Send(msg)
+				// check if message is command
+				if update.Message.Command() != "" {
+					// check if its add register command
+					if update.Message.Command() == "register" {
+						tt := update.Message.CommandArguments()
+						// check if arg is peer's telegram token
+						if len(tt) == 36 {
+							p := Peer{}
+							res := config.Collection.FindOne(context.Background(), bson.M{"telegramToken": tt})
+							err = res.Decode(&p)
+							if err != nil {
+								fmt.Println(err)
+								continue
+							}
+							_, err = config.Collection.UpdateOne(
+								context.TODO(),
+								bson.M{"telegramToken": tt},
+								bson.M{"$set": bson.M{"telegramChatID": update.Message.From.ID}})
+							if err != nil {
+								fmt.Println(err)
+								continue
+							}
+							msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Peer registered")
+							msg.ReplyToMessageID = update.Message.MessageID
+							bot.Send(msg)
+						}
+					}
+				}
 			}
 		}
 	}()
