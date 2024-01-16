@@ -8,7 +8,7 @@
 	let groups: { [key: string]: Peer[] } = {};
 	let dashboardInfo: DashboardInfo = {
 		name: '',
-		isAdmin: false
+		role: "user"
 	};
 	let sortBy = 'expiry';
 	let sortOrder = -1;
@@ -19,7 +19,7 @@
 	let newName = '';
 	let newExpiry = '';
 	let newAllowedUsage = '';
-	let newIsAdmin = false;
+	let newRole = "user";
 	let editingCurrentPeer = false;
 	let showQR = false;
 	let createPeerError = '';
@@ -63,7 +63,7 @@
 				peers = Object.values(data.peers as Peer[]);
 				dashboardInfo = {
 					name: data.name,
-					isAdmin: data.isAdmin
+					role: data.role
 				};
 			}
 		}
@@ -97,11 +97,11 @@
 		return `${totalTeras < 10 ? '0' : ''}${totalTeras.toFixed(2)}${space ? ' ' : ''}TB`;
 	}
 
-	async function createPeer(name: string, isAdmin: boolean = false) {
+	async function createPeer(name: string, role: string = "user") {
 		try {
 			const res = await fetch('/api/peers/' + name, {
 				method: 'POST',
-				body: JSON.stringify({ isAdmin })
+				body: JSON.stringify({ role })
 			});
 			if (res.status === 201) {
 				const data = await res.json();
@@ -117,7 +117,7 @@
 			console.log(error);
 			createPeerError = (error as Error).message;
 		}
-		newIsAdmin = false;
+		newRole = "user";
 	}
 
 	async function deletePeer(name: string) {
@@ -190,7 +190,7 @@
 	<span class="text-sm">{dashboardInfo.name}</span>
 </nav>
 <div class="mt-16">
-	{#if dashboardInfo.isAdmin}
+	{#if dashboardInfo.role === "admin"}
 		<div class="mx-8 my-4 flex items-center justify-between pt-4 max-md:mx-4 max-md:text-sm">
 			<div>{peers.length} Peers</div>
 			<div>{Object.keys(groups).length} Groups</div>
@@ -232,7 +232,7 @@
 				>
 					<thead class="border-b-2 border-slate-800">
 						<tr class="select-none">
-							<th class="p-2 {!dashboardInfo.isAdmin && 'hidden'}">#</th>
+							<th class="p-2 {dashboardInfo.role !=="admin" && 'hidden'}">#</th>
 							<th
 								on:click={() => {
 									sortBy = 'name';
@@ -260,9 +260,9 @@
 									sortBy = 'bandwidth';
 								}}
 								class="p-2 hover:cursor-pointer hover:underline {sortBy === 'bandwidth' &&
-									'bg-gray-950 font-black'} {!dashboardInfo.isAdmin && 'hidden'}">Bandwidth</th
+									'bg-gray-950 font-black'} {dashboardInfo.role !=="admin" && 'hidden'}">Bandwidth</th
 							>
-							{#if dashboardInfo.isAdmin}
+							{#if dashboardInfo.role ==="admin"}
 								<th
 									on:click={() => {
 										if (sortBy == 'usage') {
@@ -292,7 +292,7 @@
 								}}
 								class="hover:bg-slate-800"
 							>
-								<td class="px-2 py-1 max-md:py-2 {!dashboardInfo.isAdmin && 'hidden'}">{i + 1}</td>
+								<td class="px-2 py-1 max-md:py-2 {dashboardInfo.role !=="admin" && 'hidden'}">{i + 1}</td>
 								<td
 									class="whitespace-nowrap px-2 py-1 max-md:py-2 {sortBy === 'name' &&
 										'bg-gray-950 font-black'}">{peer.name}</td
@@ -306,10 +306,10 @@
 								</td>
 								<td
 									class="whitespace-nowrap px-2 py-1 max-md:py-2 {sortBy === 'bandwidth' &&
-										'bg-gray-950 font-black'} {!dashboardInfo.isAdmin && 'hidden'}"
+										'bg-gray-950 font-black'} {dashboardInfo.role !== "admin" && 'hidden'}"
 									>{formatBytes(peer.currentRx)}</td
 								>
-								{#if dashboardInfo.isAdmin}
+								{#if dashboardInfo.role === "admin"}
 									<td
 										class="whitespace-nowrap px-2 py-1 max-md:py-2 {sortBy === 'usage' &&
 											'bg-gray-950 font-black'} {peer.totalUsage >= peer.allowedUsage &&
@@ -447,7 +447,7 @@
 						{/if}
 					{:else}
 						<div class="mb-2 flex justify-end break-keep border-slate-700 max-md:text-sm">
-							{#if dashboardInfo.isAdmin}
+							{#if dashboardInfo.role === "admin"}
 								<button
 									on:click={() => deletePeer(currentPeer?.name || '')}
 									class="ml-2 rounded-full bg-red-500 p-2 font-bold max-md:text-sm"
@@ -503,7 +503,7 @@
 						{#if resetPeerUsageError}
 							<div class="mb-2 text-red-500">{resetPeerUsageError}</div>
 						{/if}
-						<div class="mb-2 {!dashboardInfo.isAdmin && 'hidden'}">
+						<div class="mb-2 {dashboardInfo.role !== "admin" && 'hidden'}">
 							<div class="font-bold">Address:</div>
 							<div class="ml-4 text-sm text-slate-300">{currentPeer.address}</div>
 						</div>
@@ -513,7 +513,7 @@
 								{formatBytes(currentPeer.totalUsage)} / {formatBytes(currentPeer.allowedUsage)}
 							</div>
 						</div>
-						<div class="mb-2 {!dashboardInfo.isAdmin && 'hidden'}">
+						<div class="mb-2 {dashboardInfo.role !== "admin" && 'hidden'}">
 							<div class="font-bold">Bandwidth:</div>
 							<div class="">
 								<div class="ml-4 text-sm text-slate-300">
@@ -560,7 +560,7 @@
 					<button
 						on:click={() => {
 							showCreatPeer = false;
-							newIsAdmin = false;
+							newRole = "user";
 							document.body.style.overflowY = 'auto';
 						}}
 						class="relative h-12 w-12 hover:cursor-pointer"
@@ -575,12 +575,12 @@
 						<input type="text" bind:value={newName} class="w-full rounded px-2 py-1 text-black" />
 					</div>
 					<div class="mb-4 flex items-center">
-						<input bind:checked={newIsAdmin} type="checkbox" name="isAdmin" id="isAdmin" />
+						<!-- <input bind:checked={newRole} type="checkbox" name="isAdmin" id="isAdmin" /> -->
 						<label for="isAdmin" class="ml-1">Is Admin</label>
 					</div>
 					<button
 						on:click={async () => {
-							await createPeer(newName, newIsAdmin);
+							await createPeer(newName, newRole);
 							if (createPeerError === '') {
 								showCreatPeer = false;
 							}

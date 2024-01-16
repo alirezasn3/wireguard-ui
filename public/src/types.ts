@@ -1,6 +1,6 @@
 export interface DashboardInfo {
 	name: string;
-	isAdmin: boolean;
+	role: string;
 }
 
 export interface Peer {
