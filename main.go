@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"os/exec"
 	"strconv"
@@ -14,6 +15,7 @@ import (
 
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -35,6 +37,7 @@ type Config struct {
 	ServerNetworkAddress string `json:"serverNetworkAddress"`
 	Path                 string `json:"path"`
 	DNSServers           string `json:"dnsServers"`
+	TelegramBotToken     string `json:"telegramBotToken"`
 }
 
 type Peer struct {
@@ -500,6 +503,33 @@ func main() {
 	go func() {
 		for range time.NewTicker(time.Second).C {
 			updatePeers()
+		}
+	}()
+
+	// check for telegram bot updates
+	go func() {
+		bot, err := tgbotapi.NewBotAPI(config.TelegramBotToken)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		bot.Debug = true
+
+		log.Printf("authorized on account %s", bot.Self.UserName)
+
+		u := tgbotapi.NewUpdate(0)
+		u.Timeout = 60
+
+		updates := bot.GetUpdatesChan(u)
+
+		for update := range updates {
+			if update.Message != nil {
+				log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
+				msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
+				msg.ReplyToMessageID = update.Message.MessageID
+				bot.Send(msg)
+			}
 		}
 	}()
 
