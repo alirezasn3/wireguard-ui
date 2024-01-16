@@ -14,4 +14,5 @@ export interface Peer {
 	totalUsage: number;
 	presharedKey: string;
 	publicKey: string;
+	role: string;
 }

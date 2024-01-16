@@ -558,10 +558,13 @@ func main() {
 		if newPeer.AllowedUsage != 0 {
 			peer.AllowedUsage = newPeer.AllowedUsage
 		}
+		if newPeer.Role != "" {
+			peer.Role = newPeer.Role
+		}
 		_, err = config.Collection.UpdateOne(
 			context.TODO(),
 			bson.M{"publicKey": peer.PublicKey},
-			bson.M{"$set": bson.M{"expiresAt": peer.ExpiresAt, "name": peer.Name, "allowedUsage": peer.AllowedUsage}})
+			bson.M{"$set": bson.M{"expiresAt": peer.ExpiresAt, "name": peer.Name, "allowedUsage": peer.AllowedUsage, "role": peer.Role}})
 		if err != nil {
 			fmt.Println(err)
 			c.AbortWithStatus(400)

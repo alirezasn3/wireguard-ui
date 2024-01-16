@@ -141,13 +141,19 @@
 		name: string,
 		newName: string | undefined,
 		newExpiry: number | undefined,
-		newAllowedUsage: number | undefined
+		newAllowedUsage: number | undefined,
+		newRole: string | undefined
 	) {
 		try {
 			if (name === newName) newName = undefined;
 			const res = await fetch('/api/peers/' + name, {
 				method: 'PATCH',
-				body: JSON.stringify({ name: newName, expiresAt: newExpiry, allowedUsage: newAllowedUsage })
+				body: JSON.stringify({
+					name: newName,
+					expiresAt: newExpiry,
+					allowedUsage: newAllowedUsage,
+					role: newRole
+				})
 			});
 			if (res.status === 200) {
 				if (newName && currentPeer) currentPeer.name = newName;
@@ -436,6 +442,19 @@
 							/>
 							<div class="rounded-r bg-white px-2 py-1 text-black">GB</div>
 						</div>
+						{#if dashboardInfo.role === 'admin'}
+							<label for="role" class="mb-2 text-white">Role</label>
+							<select
+								bind:value={newRole}
+								name="role"
+								id="role"
+								class="mb-4 rounded px-2 py-1 text-black"
+							>
+								<option value="user">User</option>
+								<option value="distributor">Distributor</option>
+								<option value="admin">Admin</option>
+							</select>
+						{/if}
 						<button
 							on:click={async () => {
 								if (currentPeer)
@@ -450,7 +469,8 @@
 											: undefined,
 										Number(newAllowedUsage) * 1024000000 !== currentPeer.allowedUsage
 											? Number(newAllowedUsage) * 1024000000
-											: undefined
+											: undefined,
+										newRole !== currentPeer.role ? newRole : undefined
 									);
 							}}
 							class="mb-4 ml-auto rounded bg-green-500 px-2 py-1 font-bold">SAVE</button
