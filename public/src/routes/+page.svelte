@@ -194,7 +194,9 @@
 	{#if dashboardInfo.role === 'admin' || dashboardInfo.role === 'distributor'}
 		<div class="mx-8 my-4 flex items-center justify-between pt-4 max-md:mx-4 max-md:text-sm">
 			<div>{peers.length} Peers</div>
-			<div>{Object.keys(groups).length} Groups</div>
+			{#if dashboardInfo.role === 'admin'}
+				<div>{Object.keys(groups).length} Groups</div>
+			{/if}
 		</div>
 		<div class="w-full px-4">
 			<input
