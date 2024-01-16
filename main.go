@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"os/exec"
 	"strconv"
@@ -38,27 +37,30 @@ type Config struct {
 	Path                 string `json:"path"`
 	DNSServers           string `json:"dnsServers"`
 	TelegramBotToken     string `json:"telegramBotToken"`
+	TelegramBot          *tgbotapi.BotAPI
 }
 
 type Peer struct {
-	ID              primitive.ObjectID `bson:"_id" json:"id"`
-	Name            string             `bson:"name" json:"name"`
-	PrivateKey      string             `bson:"privatekey" json:"privatekey"`
-	PublicKey       string             `bson:"publicKey" json:"publicKey"`
-	PresharedKey    string             `bson:"presharedKey" json:"presharedKey"`
-	Address         string             `bson:"address" json:"address"`
-	ExpiresAt       uint64             `bson:"expiresAt" json:"expiresAt"`
-	LatestHandshake uint64             `bson:"-" json:"latestHandshake"`
-	TotalRx         uint64             `bson:"-" json:"-"`
-	TotalTx         uint64             `bson:"-" json:"-"`
-	CurrentRx       uint64             `bson:"-" json:"currentRx"`
-	CurrentTx       uint64             `bson:"-" json:"currentTx"`
-	Suspended       bool               `bson:"suspended" json:"suspended"`
-	AllowedUsage    uint64             `bson:"allowedUsage" json:"allowedUsage"`
-	TotalUsage      uint64             `bson:"totalUsage" json:"totalUsage"`
-	Role            string             `bson:"role" json:"role"`
-	TelegramToken   string             `bson:"telegramToken" json:"telegramToken"`
-	TelegramChatID  int64              `bson:"telegramChatID" json:"telegramChatID"`
+	ID                            primitive.ObjectID `bson:"_id" json:"id"`
+	Name                          string             `bson:"name" json:"name"`
+	PrivateKey                    string             `bson:"privatekey" json:"privatekey"`
+	PublicKey                     string             `bson:"publicKey" json:"publicKey"`
+	PresharedKey                  string             `bson:"presharedKey" json:"presharedKey"`
+	Address                       string             `bson:"address" json:"address"`
+	ExpiresAt                     uint64             `bson:"expiresAt" json:"expiresAt"`
+	LatestHandshake               uint64             `bson:"-" json:"latestHandshake"`
+	TotalRx                       uint64             `bson:"-" json:"-"`
+	TotalTx                       uint64             `bson:"-" json:"-"`
+	CurrentRx                     uint64             `bson:"-" json:"currentRx"`
+	CurrentTx                     uint64             `bson:"-" json:"currentTx"`
+	Suspended                     bool               `bson:"suspended" json:"suspended"`
+	AllowedUsage                  uint64             `bson:"allowedUsage" json:"allowedUsage"`
+	TotalUsage                    uint64             `bson:"totalUsage" json:"totalUsage"`
+	Role                          string             `bson:"role" json:"role"`
+	TelegramToken                 string             `bson:"telegramToken" json:"telegramToken"`
+	TelegramChatID                int64              `bson:"telegramChatID" json:"telegramChatID"`
+	ReceivedThreeDaysNotification bool               `bson:"receivedThreeDaysNotification" json:"-"`
+	ReceivedThreeGigsNotification bool               `bson:"receivedThreeGigsNotification" json:"-"`
 }
 
 type IPAddress struct {
@@ -287,6 +289,28 @@ func updatePeers() {
 		operation.SetUpdate(bson.M{"$set": bson.M{"totalUsage": config.Peers[publicKey].TotalUsage}})
 		operations = append(operations, operation)
 
+		// send three days notice
+		if config.Peers[publicKey].TelegramChatID > 0 && !config.Peers[publicKey].ReceivedThreeDaysNotification && config.Peers[publicKey].ExpiresAt-uint64(time.Now().Unix()) < 259200 {
+			msg := tgbotapi.NewMessage(config.Peers[publicKey].TelegramChatID, fmt.Sprintf(`اشتراک شما (%s) کمتر از 3 روز دیگر به پایان میرسد`, config.Peers[publicKey].Name))
+			config.TelegramBot.Send(msg)
+			operation := mongo.NewUpdateOneModel()
+			operation.SetFilter(bson.M{"publicKey": publicKey})
+			operation.SetUpdate(bson.M{"$set": bson.M{"receivedThreeDaysNotification": true}})
+			operations = append(operations, operation)
+			config.Peers[publicKey].ReceivedThreeDaysNotification = true
+		}
+
+		// send three gigs notice
+		if config.Peers[publicKey].TelegramChatID > 0 && !config.Peers[publicKey].ReceivedThreeGigsNotification && config.Peers[publicKey].AllowedUsage-config.Peers[publicKey].TotalUsage < 3072000000 {
+			msg := tgbotapi.NewMessage(config.Peers[publicKey].TelegramChatID, fmt.Sprintf(`کمتر از 3 گیگابایت از اشتراک شما (%s) باقی مانده است`, config.Peers[publicKey].Name))
+			config.TelegramBot.Send(msg)
+			operation := mongo.NewUpdateOneModel()
+			operation.SetFilter(bson.M{"publicKey": publicKey})
+			operation.SetUpdate(bson.M{"$set": bson.M{"ReceivedThreeGigsNotification": true}})
+			operations = append(operations, operation)
+			config.Peers[publicKey].ReceivedThreeGigsNotification = true
+		}
+
 		// update latest handshake
 		config.Peers[publicKey].LatestHandshake, _ = strconv.ParseUint(string(info[4]), 10, 64)
 
@@ -510,21 +534,21 @@ func main() {
 
 	// check for telegram bot updates
 	go func() {
-		bot, err := tgbotapi.NewBotAPI(config.TelegramBotToken)
+		var err error
+		config.TelegramBot, err = tgbotapi.NewBotAPI(config.TelegramBotToken)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		log.Printf("authorized on account %s", bot.Self.UserName)
+		fmt.Printf("telegram bot username: %s\n", config.TelegramBot.Self.UserName)
 		u := tgbotapi.NewUpdate(0)
 		u.Timeout = 60
-		updates := bot.GetUpdatesChan(u)
+		updates := config.TelegramBot.GetUpdatesChan(u)
 		for update := range updates {
 			if update.Message != nil {
 				// check if message is command
 				if update.Message.Command() != "" {
-					// check if its add register command
-					if update.Message.Command() == "start" {
+					if update.Message.Command() == "start" { // check if its add register command
 						tt := update.Message.CommandArguments()
 						// check if arg is peer's telegram token
 						if len(tt) == 36 {
@@ -533,6 +557,9 @@ func main() {
 							err = res.Decode(&p)
 							if err != nil {
 								fmt.Println(err)
+								msg := tgbotapi.NewMessage(update.Message.Chat.ID, "درخواست نامعتبر")
+								msg.ReplyToMessageID = update.Message.MessageID
+								config.TelegramBot.Send(msg)
 								continue
 							}
 							_, err = config.Collection.UpdateOne(
@@ -541,11 +568,14 @@ func main() {
 								bson.M{"$set": bson.M{"telegramChatID": update.Message.From.ID}})
 							if err != nil {
 								fmt.Println(err)
+								msg := tgbotapi.NewMessage(update.Message.Chat.ID, "درخواست نامعتبر")
+								msg.ReplyToMessageID = update.Message.MessageID
+								config.TelegramBot.Send(msg)
 								continue
 							}
-							msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("کانکشن شما (%s) ثبت شد", p.Name))
+							msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf(`کانفیگ شما "%s" ثبت شد`, p.Name))
 							msg.ReplyToMessageID = update.Message.MessageID
-							bot.Send(msg)
+							config.TelegramBot.Send(msg)
 						}
 					}
 				}
