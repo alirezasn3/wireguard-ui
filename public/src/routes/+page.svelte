@@ -209,7 +209,7 @@
 		navigator.share({
 			title: name,
 			url: `https://t.me/wgcrocbot?start=${token}`,
-			files: [dataURLtoFile(dataurl, `${name}.png`, 'png')]
+			// files: [dataURLtoFile(dataurl, `${name}.png`, 'png')]
 		});
 	}
 </script>
