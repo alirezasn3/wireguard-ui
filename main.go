@@ -292,7 +292,7 @@ func updatePeers() {
 
 		// send three days notice
 		if config.Peers[publicKey].TelegramChatID > 0 && !config.Peers[publicKey].ReceivedThreeDaysNotification && config.Peers[publicKey].ExpiresAt-uint64(time.Now().Unix()) < 259200 {
-			msg := tgbotapi.NewMessage(config.Peers[publicKey].TelegramChatID, fmt.Sprintf(`اشتراک شما (%s) کمتر از 3 روز دیگر به پایان میرسد`, config.Peers[publicKey].Name))
+			msg := tgbotapi.NewMessage(config.Peers[publicKey].TelegramChatID, fmt.Sprintf(`اشتراک شما "%s" کمتر از 3 روز دیگر به پایان میرسد`, config.Peers[publicKey].Name))
 			config.TelegramBot.Send(msg)
 			operation := mongo.NewUpdateOneModel()
 			operation.SetFilter(bson.M{"publicKey": publicKey})
@@ -303,11 +303,11 @@ func updatePeers() {
 
 		// send three gigs notice
 		if config.Peers[publicKey].TelegramChatID > 0 && !config.Peers[publicKey].ReceivedThreeGigsNotification && config.Peers[publicKey].AllowedUsage-config.Peers[publicKey].TotalUsage < 3072000000 {
-			msg := tgbotapi.NewMessage(config.Peers[publicKey].TelegramChatID, fmt.Sprintf(`کمتر از 3 گیگابایت از اشتراک شما (%s) باقی مانده است`, config.Peers[publicKey].Name))
+			msg := tgbotapi.NewMessage(config.Peers[publicKey].TelegramChatID, fmt.Sprintf(`کمتر از 3 گیگابایت از اشتراک شما "%s" باقی مانده است`, config.Peers[publicKey].Name))
 			config.TelegramBot.Send(msg)
 			operation := mongo.NewUpdateOneModel()
 			operation.SetFilter(bson.M{"publicKey": publicKey})
-			operation.SetUpdate(bson.M{"$set": bson.M{"ReceivedThreeGigsNotification": true}})
+			operation.SetUpdate(bson.M{"$set": bson.M{"receivedThreeGigsNotification": true}})
 			operations = append(operations, operation)
 			config.Peers[publicKey].ReceivedThreeGigsNotification = true
 		}
@@ -574,7 +574,7 @@ func main() {
 								config.TelegramBot.Send(msg)
 								continue
 							}
-							msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf(`کانفیگ شما "%s" ثبت شد`, p.Name))
+							msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf(`اشتراک شما "%s" ثبت شد`, p.Name))
 							msg.ReplyToMessageID = update.Message.MessageID
 							config.TelegramBot.Send(msg)
 						}
