@@ -191,7 +191,6 @@
 
 	function dataURLtoFile(dataurl: string, filename: string, type: string) {
 		let arr = dataurl.split(',');
-		// let mime = arr[0].match(/:(.*?);/)[1];
 		let bstr = atob(arr[arr.length - 1]);
 		let n = bstr.length;
 		let u8arr = new Uint8Array(n);
@@ -208,8 +207,7 @@
 				config
 			);
 			await navigator.share({
-				title: name,
-				url: `https://t.me/wgcrocbot?start=${token}`,
+				url: `${name}\nhttps://t.me/wgcrocbot?start=${token}`,
 				files: [dataURLtoFile(dataurl, `${name}.png`, 'image/png')]
 			});
 		} catch (error) {
@@ -565,7 +563,9 @@
 								on:click={async () => {
 									const config = await getConfig(currentPeer?.name || '');
 									share(currentPeer?.telegramToken || '', config || '', currentPeer?.name || '');
-								}}>share</button
+								}}
+								class="ml-2 rounded-full bg-green-500 p-2 font-bold max-md:text-sm"
+								><img class="h-6 w-6 invert" src="share.png" alt="share" /></button
 							>
 						</div>
 						{#if deletePeerError}
