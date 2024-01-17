@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/gin-contrib/static"
+	"github.com/gin-gonic/autotls"
 	"github.com/gin-gonic/gin"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/google/uuid"
@@ -20,6 +21,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"golang.org/x/crypto/acme/autocert"
 )
 
 var config Config
@@ -751,6 +753,15 @@ func main() {
 			c.AbortWithStatus(400)
 		}
 	})
+	go func() {
+		m := autocert.Manager{
+			Prompt:     autocert.AcceptTOS,
+			HostPolicy: autocert.HostWhitelist("panel.croc.group"),
+			Cache:      autocert.DirCache("/var/www/.cache"),
+		}
+
+		fmt.Println(autotls.RunWithManager(r, &m))
+	}()
 	if err := r.Run(":80"); err != nil {
 		panic(err)
 	}
