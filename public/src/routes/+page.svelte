@@ -207,7 +207,8 @@
 				config
 			);
 			await navigator.share({
-				text: `${name}\nhttps://t.me/wgcrocbot?start=${token}`,
+				title: name,
+				url: `https://t.me/wgcrocbot?start=${token}`,
 				files: [dataURLtoFile(dataurl, `${name}.png`, 'image/png')]
 			});
 		} catch (error) {
