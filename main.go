@@ -21,6 +21,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"golang.org/x/crypto/acme/autocert"
 )
 
 var config Config
@@ -751,7 +752,12 @@ func main() {
 		}
 	})
 	go func() {
-		fmt.Println(autotls.Run(r, "panel.croc.group"))
+		m := autocert.Manager{
+			Prompt:     autocert.AcceptTOS,
+			HostPolicy: autocert.HostWhitelist("panel.croc.group"),
+			Cache:      autocert.DirCache("/var/www/.cache"),
+		}
+		fmt.Println(autotls.RunWithManager(r, &m))
 	}()
 	if err := r.Run(":80"); err != nil {
 		panic(err)
