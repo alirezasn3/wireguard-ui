@@ -189,28 +189,17 @@
 		}
 	}
 
-	function dataURLtoFile(dataurl: string, filename: string, type: string) {
-		let arr = dataurl.split(',');
-		// let mime = arr[0].match(/:(.*?);/)[1];
-		let bstr = atob(arr[arr.length - 1]);
-		let n = bstr.length;
-		let u8arr = new Uint8Array(n);
-		while (n--) {
-			u8arr[n] = bstr.charCodeAt(n);
-		}
-		return new File([u8arr], filename, { type });
-	}
-
 	async function share(token: string, config: string, name: string) {
-		const dataurl = await qr.toDataURL(
-			document.getElementById('qr-canvas') as HTMLCanvasElement,
-			config
-		);
-		navigator.share({
-			title: name,
-			url: `https://t.me/wgcrocbot?start=${token}`,
-			// files: [dataURLtoFile(dataurl, `${name}.png`, 'png')]
-		});
+		try {
+			const buf = await qr.toBuffer(config);
+			await navigator.share({
+				title: name,
+				url: `https://t.me/wgcrocbot?start=${token}`,
+				files: [new File([buf], `${name}.png`, { type: 'image/png' })]
+			});
+		} catch (error) {
+			console.log(error);
+		}
 	}
 </script>
 
