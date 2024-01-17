@@ -638,6 +638,7 @@ func main() {
 		}
 		if newPeer.ExpiresAt != 0 {
 			if newPeer.ExpiresAt > peer.ExpiresAt && newPeer.ExpiresAt-uint64(time.Now().Unix()) > 259200 {
+				peer.ReceivedThreeDaysNotification = false
 				update["receivedThreeDaysNotification"] = false
 			}
 			peer.ExpiresAt = newPeer.ExpiresAt
@@ -649,6 +650,7 @@ func main() {
 		}
 		if newPeer.AllowedUsage != 0 {
 			if newPeer.AllowedUsage > peer.AllowedUsage && newPeer.AllowedUsage-peer.TotalUsage > 3072000000 {
+				peer.ReceivedThreeGigsNotification = false
 				update["receivedThreeGigsNotification"] = false
 			}
 			peer.AllowedUsage = newPeer.AllowedUsage
