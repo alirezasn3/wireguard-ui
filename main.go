@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/gin-contrib/static"
+	"github.com/gin-gonic/autotls"
 	"github.com/gin-gonic/gin"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/google/uuid"
@@ -750,9 +751,7 @@ func main() {
 		}
 	})
 	go func() {
-		if err := r.Run(":443"); err != nil {
-			fmt.Println(err)
-		}
+		fmt.Println(autotls.Run(r, "panel.croc.group"))
 	}()
 	if err := r.Run(":80"); err != nil {
 		panic(err)
