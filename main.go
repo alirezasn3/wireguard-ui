@@ -628,6 +628,7 @@ func main() {
 			c.AbortWithStatus(400)
 			return
 		}
+		update := bson.M{}
 		newPeer := &Peer{}
 		err := c.BindJSON(&newPeer)
 		if err != nil {
@@ -636,21 +637,28 @@ func main() {
 			return
 		}
 		if newPeer.ExpiresAt != 0 {
+			if newPeer.ExpiresAt > peer.ExpiresAt && newPeer.ExpiresAt-uint64(time.Now().Unix()) < 259200 {
+				update["receivedThreeDaysNotification"] = false
+			}
 			peer.ExpiresAt = newPeer.ExpiresAt
+			update["expiresAt"] = peer.ExpiresAt
 		}
 		if newPeer.Name != "" {
 			peer.Name = newPeer.Name
+			update["name"] = peer.Name
 		}
 		if newPeer.AllowedUsage != 0 {
+			if newPeer.AllowedUsage > peer.AllowedUsage && newPeer.AllowedUsage-peer.TotalUsage > 3072000000 {
+				update["receivedThreeGigsNotification"] = false
+			}
 			peer.AllowedUsage = newPeer.AllowedUsage
+			update["allowedUsage"] = peer.AllowedUsage
 		}
 		if newPeer.Role != "" {
 			peer.Role = newPeer.Role
+			update["role"] = peer.Role
 		}
-		_, err = config.Collection.UpdateOne(
-			context.TODO(),
-			bson.M{"publicKey": peer.PublicKey},
-			bson.M{"$set": bson.M{"expiresAt": peer.ExpiresAt, "name": peer.Name, "allowedUsage": peer.AllowedUsage, "role": peer.Role}})
+		_, err = config.Collection.UpdateOne(context.TODO(), bson.M{"publicKey": peer.PublicKey}, bson.M{"$set": update})
 		if err != nil {
 			fmt.Println(err)
 			c.AbortWithStatus(400)
@@ -721,10 +729,11 @@ func main() {
 			return
 		}
 		peer.TotalUsage = 0
+		peer.ReceivedThreeGigsNotification = false
 		_, err := config.Collection.UpdateOne(
 			context.TODO(),
 			bson.M{"publicKey": peer.PublicKey},
-			bson.M{"$set": bson.M{"totalUsage": 0}})
+			bson.M{"$set": bson.M{"totalUsage": 0, "receivedThreeGigsNotification": false}})
 		if err != nil {
 			fmt.Println(err)
 			c.AbortWithStatus(400)

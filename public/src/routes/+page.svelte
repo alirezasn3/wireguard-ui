@@ -51,13 +51,13 @@
 	setInterval(async () => {
 		if (editingCurrentPeer || showCreatPeer) return;
 		if (currentPeer) {
-			const res = await fetch('/api/peers/' + currentPeer.name);
+			const res = await fetch('http://10.0.0.1/api/peers/' + currentPeer.name);
 			if (res.status === 200) {
 				if (!currentPeer) return;
 				currentPeer = await res.json();
 			}
 		} else {
-			const res = await fetch('/api/stats');
+			const res = await fetch('http://10.0.0.1/api/stats');
 			if (res.status === 200) {
 				const data = await res.json();
 				peers = Object.values(data.peers as Peer[]);
@@ -99,7 +99,7 @@
 
 	async function createPeer(name: string, role: string = 'user') {
 		try {
-			const res = await fetch('/api/peers/' + name, {
+			const res = await fetch('http://10.0.0.1/api/peers/' + name, {
 				method: 'POST',
 				body: JSON.stringify({ role })
 			});
@@ -122,7 +122,7 @@
 
 	async function deletePeer(name: string) {
 		try {
-			const res = await fetch('/api/peers/' + name, { method: 'DELETE' });
+			const res = await fetch('http://10.0.0.1/api/peers/' + name, { method: 'DELETE' });
 			if (res.status === 200) {
 				currentPeer = null;
 				showQR = false;
@@ -146,7 +146,7 @@
 	) {
 		try {
 			if (name === newName) newName = undefined;
-			const res = await fetch('/api/peers/' + name, {
+			const res = await fetch('http://10.0.0.1/api/peers/' + name, {
 				method: 'PATCH',
 				body: JSON.stringify({
 					name: newName,
@@ -167,7 +167,7 @@
 
 	async function resetPeerUsage(name: string) {
 		try {
-			const res = await fetch('/api/reset-usage/' + name);
+			const res = await fetch('http://10.0.0.1/api/reset-usage/' + name);
 			if (res.status === 200) {
 				editingCurrentPeer = false;
 			} else resetPeerUsageError = res.status.toString();
@@ -179,7 +179,7 @@
 
 	async function getConfig(name: string) {
 		try {
-			const res = await fetch('/api/configs/' + name);
+			const res = await fetch('http://10.0.0.1/api/configs/' + name);
 			if (res.status === 200) {
 				const config = await res.text();
 				return config;
@@ -187,6 +187,30 @@
 		} catch (error) {
 			console.log(error);
 		}
+	}
+
+	function dataURLtoFile(dataurl: string, filename: string, type: string) {
+		let arr = dataurl.split(',');
+		// let mime = arr[0].match(/:(.*?);/)[1];
+		let bstr = atob(arr[arr.length - 1]);
+		let n = bstr.length;
+		let u8arr = new Uint8Array(n);
+		while (n--) {
+			u8arr[n] = bstr.charCodeAt(n);
+		}
+		return new File([u8arr], filename, { type });
+	}
+
+	async function share(token: string, config: string, name: string) {
+		const dataurl = await qr.toDataURL(
+			document.getElementById('qr-canvas') as HTMLCanvasElement,
+			config
+		);
+		navigator.share({
+			title: name,
+			url: `https://t.me/wgcrocbot?start=${token}`,
+			files: [dataURLtoFile(dataurl, `${name}.png`, 'png')]
+		});
 	}
 </script>
 
@@ -532,6 +556,12 @@
 								}}
 								class="ml-2 rounded-full bg-green-500 p-2 font-bold max-md:text-sm"
 								><img class="h-6 w-6 invert" src="download.png" alt="download" /></button
+							>
+							<button
+								on:click={async () => {
+									const config = await getConfig(currentPeer?.name || '');
+									share(currentPeer?.telegramToken || '', config || '', currentPeer?.name || '');
+								}}>share</button
 							>
 						</div>
 						{#if deletePeerError}
