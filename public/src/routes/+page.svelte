@@ -203,7 +203,6 @@
 
 	async function share(token: string, config: string, name: string) {
 		try {
-			const buf = await qr.toBuffer(config);
 			const dataurl = await qr.toDataURL(
 				document.getElementById('qr-canvas') as HTMLCanvasElement,
 				config
