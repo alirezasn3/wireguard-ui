@@ -39,6 +39,7 @@ type Config struct {
 	DNSServers           string `json:"dnsServers"`
 	TelegramBotToken     string `json:"telegramBotToken"`
 	TelegramBot          *tgbotapi.BotAPI
+	Domain               string `json:"domain"`
 }
 
 type Peer struct {
