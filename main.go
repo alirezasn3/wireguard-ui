@@ -749,6 +749,11 @@ func main() {
 			c.AbortWithStatus(400)
 		}
 	})
+	go func() {
+		if err := r.Run(":443"); err != nil {
+			fmt.Println(err)
+		}
+	}()
 	if err := r.Run(":80"); err != nil {
 		panic(err)
 	}

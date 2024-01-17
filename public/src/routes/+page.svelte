@@ -51,13 +51,13 @@
 	setInterval(async () => {
 		if (editingCurrentPeer || showCreatPeer) return;
 		if (currentPeer) {
-			const res = await fetch('http://10.0.0.1/api/peers/' + currentPeer.name);
+			const res = await fetch('/api/peers/' + currentPeer.name);
 			if (res.status === 200) {
 				if (!currentPeer) return;
 				currentPeer = await res.json();
 			}
 		} else {
-			const res = await fetch('http://10.0.0.1/api/stats');
+			const res = await fetch('/api/stats');
 			if (res.status === 200) {
 				const data = await res.json();
 				peers = Object.values(data.peers as Peer[]);
@@ -99,7 +99,7 @@
 
 	async function createPeer(name: string, role: string = 'user') {
 		try {
-			const res = await fetch('http://10.0.0.1/api/peers/' + name, {
+			const res = await fetch('/api/peers/' + name, {
 				method: 'POST',
 				body: JSON.stringify({ role })
 			});
@@ -122,7 +122,7 @@
 
 	async function deletePeer(name: string) {
 		try {
-			const res = await fetch('http://10.0.0.1/api/peers/' + name, { method: 'DELETE' });
+			const res = await fetch('/api/peers/' + name, { method: 'DELETE' });
 			if (res.status === 200) {
 				currentPeer = null;
 				showQR = false;
@@ -146,7 +146,7 @@
 	) {
 		try {
 			if (name === newName) newName = undefined;
-			const res = await fetch('http://10.0.0.1/api/peers/' + name, {
+			const res = await fetch('/api/peers/' + name, {
 				method: 'PATCH',
 				body: JSON.stringify({
 					name: newName,
@@ -167,7 +167,7 @@
 
 	async function resetPeerUsage(name: string) {
 		try {
-			const res = await fetch('http://10.0.0.1/api/reset-usage/' + name);
+			const res = await fetch('/api/reset-usage/' + name);
 			if (res.status === 200) {
 				editingCurrentPeer = false;
 			} else resetPeerUsageError = res.status.toString();
@@ -179,7 +179,7 @@
 
 	async function getConfig(name: string) {
 		try {
-			const res = await fetch('http://10.0.0.1/api/configs/' + name);
+			const res = await fetch('/api/configs/' + name);
 			if (res.status === 200) {
 				const config = await res.text();
 				return config;
