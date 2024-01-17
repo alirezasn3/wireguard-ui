@@ -754,14 +754,7 @@ func main() {
 		}
 	})
 	go func() {
-		// m := autocert.Manager{
-		// 	Prompt:     autocert.AcceptTOS,
-		// 	HostPolicy: autocert.HostWhitelist("panel.croc.group"),
-		// 	Cache:      autocert.DirCache("/var/www/.cache"),
-		// }
-
-		// fmt.Println(autotls.RunWithManager(r, &m))
-		fmt.Println(autotls.Run(r))
+		fmt.Println(autotls.Run(r), config.Domain)
 	}()
 	if err := r.Run(":80"); err != nil {
 		panic(err)
