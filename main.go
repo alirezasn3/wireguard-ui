@@ -48,7 +48,7 @@ type Peer struct {
 	ID                            primitive.ObjectID `bson:"_id" json:"-"`
 	Name                          string             `bson:"name" json:"name"`
 	PrivateKey                    string             `bson:"privatekey" json:"-"`
-	PublicKey                     string             `bson:"publicKey" json:"-"`
+	PublicKey                     string             `bson:"publicKey" json:"publicKey"`
 	PresharedKey                  string             `bson:"presharedKey" json:"-"`
 	Address                       string             `bson:"address" json:"address"`
 	ExpiresAt                     uint64             `bson:"expiresAt" json:"expiresAt"`
