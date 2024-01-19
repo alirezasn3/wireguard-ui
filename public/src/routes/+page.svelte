@@ -48,7 +48,9 @@
 	}
 
 	onMount(async () => {
-		var ws = new WebSocket('ws://' + window.location.host + '/ws');
+		var ws = new WebSocket(
+			window.location.protocol === 'https:' ? 'wss://' : 'ws://' + window.location.host + '/ws'
+		);
 		ws.onopen = () => {
 			console.log('ws opend');
 		};
