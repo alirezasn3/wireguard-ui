@@ -613,7 +613,6 @@ func main() {
 		for {
 			time.Sleep(time.Second)
 			if peer.Role == "admin" {
-				tempPeers = config.Peers
 				conn.WriteJSON(map[string]interface{}{
 					"peers": config.Peers,
 					"role":  peer.Role,
@@ -624,13 +623,13 @@ func main() {
 				for pk, p := range config.Peers {
 					if strings.HasPrefix(p.Name, strings.Split(peer.Name, "-")[0]+"-") {
 						tempPeers[pk] = p
-						conn.WriteJSON(map[string]interface{}{
-							"peers": tempPeers,
-							"role":  peer.Role,
-							"name":  peer.Name,
-						})
 					}
 				}
+				conn.WriteJSON(map[string]interface{}{
+					"peers": tempPeers,
+					"role":  peer.Role,
+					"name":  peer.Name,
+				})
 			}
 		}
 	})

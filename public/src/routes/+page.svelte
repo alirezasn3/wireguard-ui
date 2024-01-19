@@ -265,7 +265,7 @@
 	{/if}
 
 	{#if peers.length}
-		<div class="m-4 overflow-y-auto">
+		<div class="m-4 overflow-y-auto {dashboardInfo.role === 'user' && 'mt-4'}">
 			{#if view === 'peers'}
 				<table
 					class="w-full table-auto break-keep bg-slate-900 text-left max-md:text-xs md:rounded-lg"
