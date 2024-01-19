@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"os/exec"
 	"strconv"
@@ -17,6 +18,7 @@ import (
 	"github.com/gin-gonic/gin"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/google/uuid"
+	"github.com/gorilla/websocket"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -592,6 +594,45 @@ func main() {
 	r.Use(func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", "*")
 		c.Next()
+	})
+	r.GET("/ws", func(c *gin.Context) {
+		ra := c.Request.RemoteAddr
+		peer := findPeerByIp(strings.Split(ra, ":")[0])
+		if peer == nil {
+			c.AbortWithStatus(403)
+			return
+		}
+		upgrader := websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }}
+		conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+		if err != nil {
+			http.Error(c.Writer, "could not open websocket connection", http.StatusBadRequest)
+			fmt.Println(err)
+			return
+		}
+		tempPeers := make(map[string]*Peer)
+		for {
+			time.Sleep(time.Second)
+			if peer.Role == "admin" {
+				tempPeers = config.Peers
+				conn.WriteJSON(map[string]interface{}{
+					"peers": config.Peers,
+					"role":  peer.Role,
+					"name":  peer.Name,
+				})
+			} else {
+				clear(tempPeers)
+				for pk, p := range config.Peers {
+					if strings.HasPrefix(p.Name, strings.Split(peer.Name, "-")[0]+"-") {
+						tempPeers[pk] = p
+						conn.WriteJSON(map[string]interface{}{
+							"peers": tempPeers,
+							"role":  peer.Role,
+							"name":  peer.Name,
+						})
+					}
+				}
+			}
+		}
 	})
 	r.GET("/api/stats", func(c *gin.Context) {
 		ra := c.Request.RemoteAddr
