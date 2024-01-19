@@ -634,31 +634,6 @@ func main() {
 			}
 		}
 	})
-	r.GET("/api/stats", func(c *gin.Context) {
-		ra := c.Request.RemoteAddr
-		peer := findPeerByIp(strings.Split(ra, ":")[0])
-		if peer == nil {
-			c.AbortWithStatus(403)
-			return
-		}
-
-		tempPeers := make(map[string]*Peer)
-
-		if peer.Role == "admin" {
-			tempPeers = config.Peers
-		} else {
-			for pk, p := range config.Peers {
-				if strings.HasPrefix(p.Name, strings.Split(peer.Name, "-")[0]+"-") {
-					tempPeers[pk] = p
-				}
-			}
-		}
-		data := make(map[string]interface{})
-		data["peers"] = tempPeers
-		data["role"] = peer.Role
-		data["name"] = peer.Name
-		c.JSON(200, data)
-	})
 	r.PATCH("/api/peers/:name", func(c *gin.Context) {
 		ra := c.Request.RemoteAddr
 		client := findPeerByIp(strings.Split(ra, ":")[0])
