@@ -45,11 +45,11 @@ type Config struct {
 }
 
 type Peer struct {
-	ID                            primitive.ObjectID `bson:"_id" json:"id"`
+	ID                            primitive.ObjectID `bson:"_id" json:"-"`
 	Name                          string             `bson:"name" json:"name"`
-	PrivateKey                    string             `bson:"privatekey" json:"privatekey"`
-	PublicKey                     string             `bson:"publicKey" json:"publicKey"`
-	PresharedKey                  string             `bson:"presharedKey" json:"presharedKey"`
+	PrivateKey                    string             `bson:"privatekey" json:"-"`
+	PublicKey                     string             `bson:"publicKey" json:"-"`
+	PresharedKey                  string             `bson:"presharedKey" json:"-"`
 	Address                       string             `bson:"address" json:"address"`
 	ExpiresAt                     uint64             `bson:"expiresAt" json:"expiresAt"`
 	LatestHandshake               uint64             `bson:"-" json:"latestHandshake"`
@@ -62,7 +62,7 @@ type Peer struct {
 	TotalUsage                    uint64             `bson:"totalUsage" json:"totalUsage"`
 	Role                          string             `bson:"role" json:"role"`
 	TelegramToken                 string             `bson:"telegramToken" json:"telegramToken"`
-	TelegramChatID                int64              `bson:"telegramChatID" json:"telegramChatID"`
+	TelegramChatID                int64              `bson:"telegramChatID" json:"-"`
 	ReceivedThreeDaysNotification bool               `bson:"receivedThreeDaysNotification" json:"-"`
 	ReceivedThreeGigsNotification bool               `bson:"receivedThreeGigsNotification" json:"-"`
 }
