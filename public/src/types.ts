@@ -12,7 +12,6 @@ export interface Peer {
 	currentTx: number;
 	allowedUsage: number;
 	totalUsage: number;
-	presharedKey: string;
 	publicKey: string;
 	role: string;
 	telegramToken: string;

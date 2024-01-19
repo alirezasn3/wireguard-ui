@@ -3,6 +3,7 @@
 	import type { DashboardInfo, Peer } from '../types';
 	import { fade, fly } from 'svelte/transition';
 	import qr from 'qrcode';
+	import { onMount } from 'svelte';
 
 	let peers: Peer[] = [];
 	let groups: { [key: string]: Peer[] } = {};
@@ -12,7 +13,6 @@
 	};
 	let sortBy = 'expiry';
 	let sortOrder = -1;
-	let currentGroup = '';
 	let currentPeer: Peer | null = null;
 	let view = 'peers';
 	let showCreatPeer = false;
@@ -21,7 +21,6 @@
 	let newAllowedUsage = '';
 	let newRole = 'user';
 	let editingCurrentPeer = false;
-	let showQR = false;
 	let createPeerError = '';
 	let updatePeerError = '';
 	let deletePeerError = '';
@@ -48,26 +47,28 @@
 		}
 	}
 
-	setInterval(async () => {
-		if (editingCurrentPeer || showCreatPeer) return;
-		if (currentPeer) {
-			const res = await fetch('/api/peers/' + currentPeer.name);
-			if (res.status === 200) {
-				if (!currentPeer) return;
-				currentPeer = await res.json();
-			}
-		} else {
-			const res = await fetch('/api/stats');
-			if (res.status === 200) {
-				const data = await res.json();
-				peers = Object.values(data.peers as Peer[]);
+	onMount(async () => {
+		var ws = new WebSocket('ws://' + window.location.host + '/ws');
+		ws.onopen = () => {
+			console.log('ws opend');
+		};
+		ws.onmessage = ({ data }) => {
+			if (editingCurrentPeer || showCreatPeer) return;
+			const parsedData = JSON.parse(data);
+			if (currentPeer) {
+				currentPeer = parsedData.peers[currentPeer.publicKey];
+			} else {
+				peers = Object.values(parsedData.peers as Peer[]);
 				dashboardInfo = {
-					name: data.name,
-					role: data.role
+					name: parsedData.name,
+					role: parsedData.role
 				};
 			}
-		}
-	}, 1000);
+		};
+		ws.onclose = () => {
+			console.log('ws closed');
+		};
+	});
 
 	function formatSeconds(totalSeconds: number, noPrefix = false) {
 		if (!totalSeconds) return 'unknown';
@@ -97,11 +98,11 @@
 		return `${totalTeras < 10 ? '0' : ''}${totalTeras.toFixed(2)}${space ? ' ' : ''}TB`;
 	}
 
-	async function createPeer(name: string, role: string = 'user') {
+	async function createPeer(name: string, role: string) {
 		try {
 			const res = await fetch('/api/peers/' + name, {
 				method: 'POST',
-				body: JSON.stringify({ role })
+				body: JSON.stringify({ role: role || 'user' })
 			});
 			if (res.status === 201) {
 				const data = await res.json();
@@ -125,7 +126,6 @@
 			const res = await fetch('/api/peers/' + name, { method: 'DELETE' });
 			if (res.status === 200) {
 				currentPeer = null;
-				showQR = false;
 				editingCurrentPeer = false;
 				document.body.style.overflowY = 'auto';
 			} else {
@@ -325,9 +325,15 @@
 					>
 						{#each peers as peer, i}
 							<tr
-								on:click={() => {
+								on:click={async () => {
 									currentPeer = peer;
 									document.body.style.overflowY = 'hidden';
+									createPeerError = '';
+									updatePeerError = '';
+									deletePeerError = '';
+									resetPeerUsageError = '';
+									const config = await getConfig(currentPeer?.name || '');
+									qr.toCanvas(document.getElementById('qr-canvas'), config || '');
 								}}
 								class="hover:bg-slate-800"
 							>
@@ -424,7 +430,6 @@
 					<button
 						on:click={() => {
 							currentPeer = null;
-							showQR = false;
 							editingCurrentPeer = false;
 							newRole = '';
 							newName = '';
@@ -550,15 +555,6 @@
 							<button
 								on:click={async () => {
 									const config = await getConfig(currentPeer?.name || '');
-									qr.toCanvas(document.getElementById('qr-canvas'), config || '');
-									showQR = true;
-								}}
-								class="ml-2 rounded-full bg-green-500 p-2 font-bold max-md:text-sm"
-								><img class="h-6 w-6 invert" src="/qr.png" alt="qrcode" /></button
-							>
-							<button
-								on:click={async () => {
-									const config = await getConfig(currentPeer?.name || '');
 									const file = new Blob([config || ''], { type: 'application/octet-stream' });
 									const a = document.createElement('a');
 									a.href = URL.createObjectURL(file);
@@ -612,11 +608,11 @@
 							<div class="font-bold">Telegram Bot Token:</div>
 							<div class="ml-4 text-sm text-slate-300">{currentPeer.telegramToken}</div>
 						</div>
-						<canvas
-							class="max-md:w-[calc(100vw-64)] {showQR ? 'max-h-fit' : 'max-h-0'}"
-							id="qr-canvas"
-						/>
 					{/if}
+					<canvas
+						class="{editingCurrentPeer && 'hidden'} max-md:w-[calc(100vw-64)]"
+						id="qr-canvas"
+					/>
 				</div>
 			</div>
 		</div>
