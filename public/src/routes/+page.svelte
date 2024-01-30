@@ -209,9 +209,8 @@
 				config
 			);
 			await navigator.share({
-				// title: name,
-				text: 'https://t.me/crocvpn | ' + name,
-				// url: `https://t.me/wgcrocbot?start=${token}`,
+				title: name,
+				url: `https://t.me/wgcrocbot?start=${token}`,
 				files: [dataURLtoFile(dataurl, `${name}.png`, 'image/png')]
 			});
 		} catch (error) {
