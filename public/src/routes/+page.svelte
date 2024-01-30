@@ -209,7 +209,7 @@
 				config
 			);
 			await navigator.share({
-				title: 'https://t.me/crocvpn | ' + name,
+				title: name,
 				// url: `https://t.me/wgcrocbot?start=${token}`,
 				files: [dataURLtoFile(dataurl, `${name}.png`, 'image/png')]
 			});
