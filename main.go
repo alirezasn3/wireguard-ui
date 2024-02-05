@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -329,7 +330,7 @@ func updatePeers() {
 			cmd := exec.Command("sh", config.Path+"/scripts/replace-string.sh", fmt.Sprintf("/etc/wireguard/%s.conf", config.InterfaceName), config.Peers[publicKey].PresharedKey, invalid)
 			_, err := cmd.Output()
 			if err != nil {
-				fmt.Println(err)
+				log.Println(err)
 				continue
 			}
 
@@ -337,20 +338,20 @@ func updatePeers() {
 			cmd = exec.Command("wg-quick", "strip", "wg0")
 			configBytes, err := cmd.Output()
 			if err != nil {
-				fmt.Println(err)
+				log.Println(err)
 			}
 
 			// write striped config to a file
 			err = os.WriteFile(config.Path+"/wg0.conf", configBytes, 0644)
 			if err != nil {
-				fmt.Println(err)
+				log.Println(err)
 			}
 
 			// save chagnes to main config file
 			cmd = exec.Command("wg", "syncconf", config.InterfaceName, fmt.Sprintf("%s/%s.conf", config.Path, config.InterfaceName))
 			_, err = cmd.Output()
 			if err != nil {
-				fmt.Println(err)
+				log.Println(err)
 				continue
 			}
 
@@ -358,7 +359,7 @@ func updatePeers() {
 			config.Peers[publicKey].Suspended = true
 			_, err = config.Collection.UpdateOne(context.TODO(), bson.M{"publicKey": config.Peers[publicKey].PublicKey}, bson.M{"$set": bson.M{"suspended": true}})
 			if err != nil {
-				fmt.Println(err)
+				log.Println(err)
 				continue
 			}
 		}
