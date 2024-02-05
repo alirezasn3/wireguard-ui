@@ -1,3 +1,3 @@
 #!/bin/bash
 
-sed -i "s@$2@$3@" $1
+sudo sed -i "s@$2@$3@" $1

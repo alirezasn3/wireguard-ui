@@ -117,7 +117,7 @@ func createPeer(name string, role string) (*Peer, error) {
 	var a IPAddress
 	a.Parse(strings.Split(config.ServerNetworkAddress, "/")[0])
 	a.Increment()
-	cmd := exec.Command("wg-quick", "strip", config.InterfaceName)
+	cmd := exec.Command("sudo", "wg-quick", "strip", config.InterfaceName)
 	allPeersBytes, err := cmd.Output()
 	if err != nil {
 		return nil, err
@@ -128,7 +128,7 @@ func createPeer(name string, role string) (*Peer, error) {
 	}
 
 	// create private key
-	cmd = exec.Command("wg", "genkey")
+	cmd = exec.Command("sudo", "wg", "genkey")
 	privateKeyBytes, err := cmd.Output()
 	if err != nil {
 		return nil, err
@@ -136,8 +136,8 @@ func createPeer(name string, role string) (*Peer, error) {
 	clientPrivateKey := strings.TrimSpace(string(privateKeyBytes))
 
 	// create publick key
-	echoCommand := exec.Command("echo", clientPrivateKey)
-	genkeyCommand := exec.Command("wg", "pubkey")
+	echoCommand := exec.Command("sudo", "echo", clientPrivateKey)
+	genkeyCommand := exec.Command("sudo", "wg", "pubkey")
 	genkeyCommand.Stdin, _ = echoCommand.StdoutPipe()
 	err = echoCommand.Start()
 	if err != nil {
@@ -150,7 +150,7 @@ func createPeer(name string, role string) (*Peer, error) {
 	clientPublicKey := strings.TrimSpace(string(publicKeyBytes))
 
 	// create preshared key
-	cmd = exec.Command("wg", "genpsk")
+	cmd = exec.Command("sudo", "wg", "genpsk")
 	presharedKeyBytes, err := cmd.Output()
 	if err != nil {
 		return nil, err
@@ -188,7 +188,7 @@ func createPeer(name string, role string) (*Peer, error) {
 	}
 
 	// get striped config
-	cmd = exec.Command("wg-quick", "strip", "wg0")
+	cmd = exec.Command("sudo", "wg-quick", "strip", "wg0")
 	configBytes, err := cmd.Output()
 	if err != nil {
 		return nil, err
@@ -201,7 +201,7 @@ func createPeer(name string, role string) (*Peer, error) {
 	}
 
 	// save chagnes to main config file
-	cmd = exec.Command("wg", "syncconf", config.InterfaceName, fmt.Sprintf("%s/%s.conf", config.Path, config.InterfaceName))
+	cmd = exec.Command("sudo", "wg", "syncconf", config.InterfaceName, fmt.Sprintf("%s/%s.conf", config.Path, config.InterfaceName))
 	_, err = cmd.Output()
 	if err != nil {
 		return nil, err
@@ -251,7 +251,7 @@ func deletePeer(name string) error {
 
 func updatePeers() {
 	// get peers info from wg
-	cmd := exec.Command("wg", "show", config.InterfaceName, "dump")
+	cmd := exec.Command("sudo", "wg", "show", config.InterfaceName, "dump")
 	bytes, err := cmd.Output()
 	if err != nil {
 		fmt.Println(err)
@@ -326,7 +326,7 @@ func updatePeers() {
 			invalid := config.Peers[publicKey].ID.Hex() + "AAAAAAAAAAAAAAAAAAA="
 
 			// replace peer's preshared key with the invalid one
-			cmd := exec.Command("sh", config.Path+"/scripts/replace-string.sh", fmt.Sprintf("/etc/wireguard/%s.conf", config.InterfaceName), config.Peers[publicKey].PresharedKey, invalid)
+			cmd := exec.Command("sudo", "sh", config.Path+"/scripts/replace-string.sh", fmt.Sprintf("/etc/wireguard/%s.conf", config.InterfaceName), config.Peers[publicKey].PresharedKey, invalid)
 			_, err := cmd.Output()
 			if err != nil {
 				fmt.Println(err)
@@ -334,7 +334,7 @@ func updatePeers() {
 			}
 
 			// get striped config
-			cmd = exec.Command("wg-quick", "strip", "wg0")
+			cmd = exec.Command("sudo", "wg-quick", "strip", "wg0")
 			configBytes, err := cmd.Output()
 			if err != nil {
 				fmt.Println(err)
@@ -347,7 +347,7 @@ func updatePeers() {
 			}
 
 			// save chagnes to main config file
-			cmd = exec.Command("wg", "syncconf", config.InterfaceName, fmt.Sprintf("%s/%s.conf", config.Path, config.InterfaceName))
+			cmd = exec.Command("sudo", "wg", "syncconf", config.InterfaceName, fmt.Sprintf("%s/%s.conf", config.Path, config.InterfaceName))
 			_, err = cmd.Output()
 			if err != nil {
 				fmt.Println(err)
@@ -380,14 +380,14 @@ func updatePeers() {
 			}
 
 			// replace invalid preshared key with the correct one from database
-			cmd := exec.Command("sh", config.Path+"/scripts/replace-string.sh", fmt.Sprintf("/etc/wireguard/%s.conf", config.InterfaceName), invalid, p.PresharedKey)
+			cmd := exec.Command("sudo", "sh", config.Path+"/scripts/replace-string.sh", fmt.Sprintf("/etc/wireguard/%s.conf", config.InterfaceName), invalid, p.PresharedKey)
 			_, err := cmd.Output()
 			if err != nil {
 				panic(err)
 			}
 
 			// get striped config
-			cmd = exec.Command("wg-quick", "strip", "wg0")
+			cmd = exec.Command("sudo", "wg-quick", "strip", "wg0")
 			configBytes, err := cmd.Output()
 			if err != nil {
 				fmt.Println(err)
@@ -400,7 +400,7 @@ func updatePeers() {
 			}
 
 			// save chagnes to main config file
-			cmd = exec.Command("wg", "syncconf", config.InterfaceName, fmt.Sprintf("%s/%s.conf", config.Path, config.InterfaceName))
+			cmd = exec.Command("sudo", "wg", "syncconf", config.InterfaceName, fmt.Sprintf("%s/%s.conf", config.Path, config.InterfaceName))
 			_, err = cmd.Output()
 			if err != nil {
 				panic(err)
@@ -498,7 +498,7 @@ func init() {
 	}
 
 	// get peers info from wg
-	cmd := exec.Command("wg", "show", config.InterfaceName, "dump")
+	cmd := exec.Command("sudo", "wg", "show", config.InterfaceName, "dump")
 	bytes, err = cmd.Output()
 	if err != nil {
 		panic(err)
