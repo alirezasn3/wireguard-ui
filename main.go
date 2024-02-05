@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -189,14 +188,14 @@ func createPeer(name string, role string) (*Peer, error) {
 	}
 
 	// get striped config
-	cmd = exec.Command("wg-quick", "strip", "wg0")
+	cmd = exec.Command("wg-quick", "strip", config.InterfaceName)
 	configBytes, err := cmd.Output()
 	if err != nil {
 		return nil, err
 	}
 
 	// write striped config to a file
-	err = os.WriteFile(config.Path+"/wg0.conf", configBytes, 0644)
+	err = os.WriteFile(config.Path+"/"+config.InterfaceName+".conf", configBytes, 0644)
 	if err != nil {
 		panic(err)
 	}
@@ -330,32 +329,28 @@ func updatePeers() {
 			cmd := exec.Command("sh", config.Path+"/scripts/replace-string.sh", fmt.Sprintf("/etc/wireguard/%s.conf", config.InterfaceName), config.Peers[publicKey].PresharedKey, invalid)
 			_, err := cmd.Output()
 			if err != nil {
-				log.Println(err)
-				fmt.Println("1")
+				fmt.Println(err)
 				continue
 			}
 
 			// get striped config
-			cmd = exec.Command("wg-quick", "strip", "wg0")
+			cmd = exec.Command("wg-quick", "strip", config.InterfaceName)
 			configBytes, err := cmd.Output()
 			if err != nil {
-				log.Println(err)
-				fmt.Println("2")
+				fmt.Println(err)
 			}
 
 			// write striped config to a file
-			err = os.WriteFile(config.Path+"/wg0.conf", configBytes, 0644)
+			err = os.WriteFile(config.Path+"/"+config.InterfaceName+".conf", configBytes, 0644)
 			if err != nil {
-				log.Println(err)
-				fmt.Println("3")
+				fmt.Println(err)
 			}
 
 			// save chagnes to main config file
 			cmd = exec.Command("wg", "syncconf", config.InterfaceName, fmt.Sprintf("%s/%s.conf", config.Path, config.InterfaceName))
 			_, err = cmd.Output()
 			if err != nil {
-				log.Println(err)
-				fmt.Println("4")
+				fmt.Println(err)
 				continue
 			}
 
@@ -363,8 +358,7 @@ func updatePeers() {
 			config.Peers[publicKey].Suspended = true
 			_, err = config.Collection.UpdateOne(context.TODO(), bson.M{"publicKey": config.Peers[publicKey].PublicKey}, bson.M{"$set": bson.M{"suspended": true}})
 			if err != nil {
-				log.Println(err)
-				fmt.Println("5")
+				fmt.Println(err)
 				continue
 			}
 		}
@@ -393,14 +387,14 @@ func updatePeers() {
 			}
 
 			// get striped config
-			cmd = exec.Command("wg-quick", "strip", "wg0")
+			cmd = exec.Command("wg-quick", "strip", config.InterfaceName)
 			configBytes, err := cmd.Output()
 			if err != nil {
 				fmt.Println(err)
 			}
 
 			// write striped config to a file
-			err = os.WriteFile(config.Path+"/wg0.conf", configBytes, 0644)
+			err = os.WriteFile(config.Path+"/"+config.InterfaceName+".conf", configBytes, 0644)
 			if err != nil {
 				fmt.Println(err)
 			}
