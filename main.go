@@ -331,6 +331,7 @@ func updatePeers() {
 			_, err := cmd.Output()
 			if err != nil {
 				log.Println(err)
+				fmt.Println("1")
 				continue
 			}
 
@@ -339,12 +340,14 @@ func updatePeers() {
 			configBytes, err := cmd.Output()
 			if err != nil {
 				log.Println(err)
+				fmt.Println("2")
 			}
 
 			// write striped config to a file
 			err = os.WriteFile(config.Path+"/wg0.conf", configBytes, 0644)
 			if err != nil {
 				log.Println(err)
+				fmt.Println("3")
 			}
 
 			// save chagnes to main config file
@@ -352,6 +355,7 @@ func updatePeers() {
 			_, err = cmd.Output()
 			if err != nil {
 				log.Println(err)
+				fmt.Println("4")
 				continue
 			}
 
@@ -360,6 +364,7 @@ func updatePeers() {
 			_, err = config.Collection.UpdateOne(context.TODO(), bson.M{"publicKey": config.Peers[publicKey].PublicKey}, bson.M{"$set": bson.M{"suspended": true}})
 			if err != nil {
 				log.Println(err)
+				fmt.Println("5")
 				continue
 			}
 		}
